@@ -25,14 +25,21 @@ VERSION = 0
 
 
 def usage():
-	print("convert_mupen [file]")
-	print("outputs speedrun.spd in the correct format")
+	print("convert_mupen [file] [desctription]")
+	print("outputs inputs.inp in the correct format. Description is optional")
 
-def main(input):
-	with open(input, "rb") as source, open("speedrun.spd", "wb") as target:
+def main(input, description):
+	descriptionBytes = bytearray(32)
+	if description:
+		if len(description) > 32:
+			description = description[:32]
+		descriptionBytes = description.encode("ASCII", "replace").ljust(32, bytearray(1))
+
+	with open(input, "rb") as source, open("inputs.inp", "wb") as target:
 		#Standard Header
 		target.write(b"TASRAW")
 		target.write(bytearray([CONSOLE, VERSION]))
+		target.write(descriptionBytes)
 
 		source.seek(0x400)
 		current = source.read(4)
@@ -57,7 +64,9 @@ def main(input):
 		target.flush()
 
 
-if len(sys.argv) != 2:
-	usage()
+if len(sys.argv) == 2:
+	main(sys.argv[1], None)
+elif len(sys.argv) == 3:
+	main(sys.argv[1], sys.argv[2])
 else:
-	main(sys.argv[1])
+	usage()

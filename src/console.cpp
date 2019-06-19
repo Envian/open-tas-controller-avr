@@ -30,7 +30,7 @@ FASTRUN void sendButton(unsigned long buttons) {
 		waitCycles(110);
 
 		switch (cmd) {
-			// Some consoles ask with FF (SM64 US), others 00 (Army Men Sarge's Heros 2). 
+			// Some consoles ask with FF (SM64 US), others 00 (Army Men Sarge's Heros 2).
 			case 0x00:
 			case 0xFF:
 				writeBits(0b000000000000000010100000, 24);
