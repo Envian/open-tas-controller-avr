@@ -24,16 +24,31 @@
 #define CONSOLE_LOWER() CONSOLE_PINMODE_REG |= CONSOLE_PINMODE_MASK
 #define UNIT_WAIT 46
 
+#define WAIT_FALLING_EDGE(PIN) while (digitalReadFast(PIN) == LOW) { } while (digitalReadFast(PIN) == HIGH) { }
+#define WAIT_RISING_EDGE(PIN) while (digitalReadFast(PIN) == HIGH) { } while (digitalReadFast(PIN) == LOW) { }
+
 FASTRUN unsigned long readBits(int count) {
 	unsigned long value = 0;
 	for (int x = 0; x < count; x++) {
 		value <<= 1;
-		while (digitalReadFast(PIN_CONSOLE) == LOW) { }
-		while (digitalReadFast(PIN_CONSOLE) == HIGH) { }
+		WAIT_FALLING_EDGE(PIN_CONSOLE);
 		waitCycles(UNIT_WAIT * 2);
 		value |= digitalReadFast(PIN_CONSOLE) ? 1 : 0;
 	}
 	return value;
+}
+
+FASTRUN void endRead() {
+	WAIT_FALLING_EDGE(PIN_CONSOLE);
+	WAIT_RISING_EDGE(PIN_CONSOLE);
+	// Gives a bit before the response.
+	waitCycles(UNIT_WAIT * 2);
+}
+
+FASTRUN void writeControlBit() {
+	CONSOLE_LOWER();
+	waitCycles(UNIT_WAIT * 2);
+	CONSOLE_RELEASE();
 }
 
 FASTRUN void writeBits(unsigned long bits, int count) {
@@ -50,8 +65,16 @@ FASTRUN void writeBits(unsigned long bits, int count) {
 		}
 	}
 
-	// Final control bit
-	CONSOLE_LOWER();
-	waitCycles(UNIT_WAIT * 2);
-	CONSOLE_RELEASE();
+	writeControlBit();
+}
+
+FASTRUN void writeZeros(int count) {
+	for (int x = 0; x < count; x++) {
+		CONSOLE_LOWER();
+		waitCycles(UNIT_WAIT * 3 + 1);
+		CONSOLE_RELEASE();
+		waitCycles(UNIT_WAIT * 1);
+	}
+
+	writeControlBit();
 }

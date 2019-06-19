@@ -17,4 +17,6 @@
 #include <Arduino.h>
 
 FASTRUN unsigned long readBits(int count);
+FASTRUN void endRead();
 FASTRUN void writeBits(unsigned long bits, int count);
+FASTRUN void writeZeros(int count);

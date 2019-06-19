@@ -23,22 +23,30 @@
 FASTRUN void sendButton(unsigned long buttons) {
 	noInterrupts();
 	while (true) {
-		unsigned long cmd = readBits(8);
-
-		// Delays long enough for the console to send its control bit
-		waitCycles(110);
-		waitCycles(110);
+		int cmd = readBits(8);
 
 		switch (cmd) {
-			// Some consoles ask with FF (SM64 US), others 00 (Army Men Sarge's Heros 2).
-			case 0x00:
-			case 0xFF:
-				writeBits(0b000000000000000010100000, 24);
+			case 0x00: // Controller status
+			case 0xFF: // Reset Controller
+				endRead();
+				writeBits(0x050000, 24);
 				break;
-			case 1:
+			case 0x01: // Poll Inputs
+				endRead();
 				writeBits(buttons, 32);
 				interrupts();
 				return;
+			case 0x02: // Read
+				readBits(16); // Reads two extra address bytes.
+				endRead();
+				writeZeros(33 * 8);
+				break;
+			case 0x03:
+				int address = readBits(16) >> 5;
+				readBits(32 * 8);
+				endRead();
+				// TODO: respond here.
+				break;
 		}
 	}
 }
