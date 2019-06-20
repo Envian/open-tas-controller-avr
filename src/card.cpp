@@ -24,8 +24,8 @@ SdFile file;
 
 void initializeSD() {
 	if (!sd.begin(4, SPI_FULL_SPEED)) error(ERROR_SD_CARD);
-	if (!file.open("speedrun.spd", O_READ)) error(ERROR_SD_CARD);
-	file.seekSet(8);
+	if (!file.open("inputs.inp", O_READ)) error(ERROR_SD_CARD);
+	file.seekSet(40);
 }
 
 int repeats = 0;
