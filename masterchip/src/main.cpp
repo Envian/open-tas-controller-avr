@@ -16,20 +16,19 @@
 
 #include <Arduino.h>
 
-#include "pinout.h"
+#include "seriallink.h"
 
-#define ERROR_CODE_LENGTH 200
-void error(unsigned long errorCode) {
-	interrupts();
-	pinMode(PIN_LED, OUTPUT);
-	digitalWrite(PIN_LED, LOW);
-	while (true) {
-		for (int x = 0; x == 0 || ((unsigned long)(1 << x) <= errorCode); x++) {
-			digitalWrite(PIN_LED, HIGH);
-			delay(bitRead(errorCode, x) ? (ERROR_CODE_LENGTH * 3) : ERROR_CODE_LENGTH);
-			digitalWrite(PIN_LED, LOW);
-			delay(ERROR_CODE_LENGTH);
-		}
-		delay(ERROR_CODE_LENGTH * 5);
+// Pins D10 for High, D9 for low
+byte bits = 0;
+
+void setup() {
+	SerialLink::init();
+}
+
+void loop() {
+	// Temporary Benchmark
+	if (SerialLink::available()) {
+		SerialLink::beginWrite(bits);
+		bits++;
 	}
 }

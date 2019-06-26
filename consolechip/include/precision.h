@@ -14,30 +14,19 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#pragma once
-#include <Arduino.h>
 
-FASTRUN void _waitCycles() __attribute__ ((used));
-
-/*
-#define WAITCYCLES_CALL_COST 11
-#define WAITCYCLES_LOOPS(x) ((x - WAITCYCLES_CALL_COST) / 4)
-#define WAITCYCLES_REMAINDER(x) (4 - ((x - WAITCYCLES_CALL_COST) % 4))
-
-#define waitCycles(count) asm volatile (\
-	"MOVS r0, %0 \n" \
-	"MOVS r1, %1 \n" \
-	"BL WAIT_CYCLES_METHOD \n" \
-	: \
-	: "i" (WAITCYCLES_LOOPS(count) + 1), "i" (WAITCYCLES_REMAINDER(count) * 2) \
-	: "cc", "r0", "r1", "lr" \
-)
-*/
-
-#define waitCycles(count) asm volatile (\
-	"MOVS r0, %0 \n" \
-	"BL WAIT_CYCLES_METHOD \n" \
-	: \
-	: "i" (count) \
-	: "cc", "r0", "r3", "lr" \
-)
+#define waitCycles(cycles) switch(cycles % 3) { \
+case 2: asm volatile("\tNOP\n"); \
+case 1: asm volatile("\tNOP\n"); \
+default: { \
+	register byte __scratch; \
+	asm volatile( \
+		"\tLDI %0, %1\n" \
+		"WAIT_CYCLES_LOOP%=:\n" \
+		"\tDEC %0\n" \
+		"\tBRNE WAIT_CYCLES_LOOP%=\n" \
+		: "=r" (__scratch) \
+		: "i" (cycles / 3) \
+		: "cc" \
+	); \
+}}

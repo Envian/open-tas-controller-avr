@@ -14,9 +14,20 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+#include <Arduino.h>
 
-// Errors are morse code - from least significant bit to most.
-#define ERROR_SD_CARD 0b1101100
-#define ERROR_EOF 0b001
+#include "seriallink.h"
 
-void error(unsigned long errorCode);
+byte bits = 0;
+
+void setup() {
+	SerialLink::init();
+}
+
+void loop() {
+	// Temporary Benchmark
+	if (SerialLink::read() != bits) {
+		digitalWrite(13, HIGH);
+	}
+	bits++;
+}

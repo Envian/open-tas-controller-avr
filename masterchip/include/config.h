@@ -14,39 +14,13 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#include <Arduino.h>
-
-#include "error.h"
-#include "io.h"
-#include "precision.h"
-
-FASTRUN void sendButton(unsigned long buttons) {
-	noInterrupts();
-	while (true) {
-		int cmd = readBits(8);
-
-		switch (cmd) {
-			case 0x00: // Controller status
-			case 0xFF: // Reset Controller
-				endRead();
-				writeBits(0x050000, 24);
-				break;
-			case 0x01: // Poll Inputs
-				endRead();
-				writeBits(buttons, 32);
-				interrupts();
-				return;
-			case 0x02: // Read
-				readBits(16); // Reads two extra address bytes.
-				endRead();
-				writeZeros(33 * 8);
-				break;
-			case 0x03:
-				int address = readBits(16) >> 5;
-				readBits(32 * 8);
-				endRead();
-				// TODO: respond here.
-				break;
-		}
-	}
-}
+/*****************************************************************************
+ *                                   LINK                                    *
+ *****************************************************************************/
+// For the master chip, runs on digital 10 and digital 9.
+// Having both pins on the same port improves performance, and is required.
+#define LINK_DIR DDRB
+#define LINK_DATA PORTB
+#define LINK_INPUT PINB
+#define LINK_HIGHPIN 2
+#define LINK_LOWPIN 1
