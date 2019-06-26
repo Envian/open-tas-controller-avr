@@ -26,14 +26,3 @@
 #define LINK_INPUT PINC
 #define LINK_HIGHPIN 0
 #define LINK_LOWPIN 1
-
-/******************************************************************************
-*                                    COMMON                                   *
-******************************************************************************/
-// These properties must be the same between both the console and master chips
- #define HANDSHAKE B10101100
-
-enum PlaybackMode : byte {
-	N64_PLAY,
-	N64_RECORD
-};

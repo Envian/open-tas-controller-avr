@@ -14,21 +14,9 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#include <Arduino.h>
-#include "config.h"
-#include "common.h"
+#define HANDSHAKE B10101100
 
-#include "seriallink.h"
-#include "consoles.h"
-
-byte bits = 0;
-
-void setup() {
-	SerialLink::init();
-	SerialLink::write(HANDSHAKE);
-	runConsole((PlaybackMode)SerialLink::read());
-}
-
-void loop() {
-	// nope.
-}
+enum PlaybackMode : byte {
+	N64_PLAY,
+	N64_RECORD
+};
