@@ -14,12 +14,29 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-namespace SerialLink {
-	void init();
+#include <Arduino.h>
+#include "config.h"
 
-	uint8_t read();
-	void write(uint8_t data);
+#include "buffer.h"
+#include "seriallink.h"
 
-	void beginWrite(uint8_t data);
-	bool available();
-};
+namespace Buffer {
+	void fillBuffer() {
+		while (true) {
+			*writeptr = SerialLink::read();
+			// Stop writing when this it catches up to the reader.
+			while ((readptr - writeptr) == 1);
+			writeptr++;
+		}
+	}
+	uint8_t getByte() {
+		if (readptr == writeptr) {
+			//panic
+			while (true);
+		}
+
+		uint8_t data = *readptr;
+		readptr++;
+		return data;
+	}
+}

@@ -14,12 +14,19 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-namespace SerialLink {
-	void init();
+#pragma once
 
-	uint8_t read();
-	void write(uint8_t data);
+#include <Arduino.h>
+#include "config.h"
 
-	void beginWrite(uint8_t data);
-	bool available();
-};
+// Must be byte size for buffer size calc.
+#define BUFFER_SIZE 256
+
+namespace Buffer {
+	volatile uint8_t buffer[BUFFER_SIZE];
+	volatile uint8_t* volatile readptr = &buffer[0];
+	volatile uint8_t* volatile writeptr = &buffer[0];
+
+	void fillBuffer();
+	uint8_t getByte();
+}

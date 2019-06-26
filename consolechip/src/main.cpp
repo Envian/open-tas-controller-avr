@@ -15,19 +15,19 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <Arduino.h>
+#include "config.h"
 
 #include "seriallink.h"
+#include "consoles.h"
 
 byte bits = 0;
 
 void setup() {
 	SerialLink::init();
+	SerialLink::write(HANDSHAKE);
+	runConsole((PlaybackMode)SerialLink::read());
 }
 
 void loop() {
-	// Temporary Benchmark
-	if (SerialLink::read() != bits) {
-		digitalWrite(13, HIGH);
-	}
-	bits++;
+	// nope.
 }

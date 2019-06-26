@@ -1,4 +1,4 @@
-// SerialLink - A two pin serial communication protocol.
+// Open TAS Controller - A controller emulator for running TAS on hardware.
 // Copyright (C) 2019  Russell Small
 //
 // This program is free software: you can redistribute it and/or modify
@@ -13,6 +13,11 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+#pragma once
+
+#include <Arduino.h>
+#include "config.h"
 
 namespace SerialLink {
 	void init();

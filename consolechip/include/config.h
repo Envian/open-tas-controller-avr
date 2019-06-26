@@ -14,11 +14,11 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#define CHIP_VERSION 0
+#pragma once
 
-/*****************************************************************************
- *                                   LINK                                    *
- *****************************************************************************/
+/*******************************************************************************
+*                                     LINK                                     *
+*******************************************************************************/
 // For the console chip, runs on analog 0 and analog 1.
 // Having both pins on the same port improves performance
 #define LINK_DIR DDRC
@@ -26,3 +26,14 @@
 #define LINK_INPUT PINC
 #define LINK_HIGHPIN 0
 #define LINK_LOWPIN 1
+
+/******************************************************************************
+*                                    COMMON                                   *
+******************************************************************************/
+// These properties must be the same between both the console and master chips
+ #define HANDSHAKE B10101100
+
+enum PlaybackMode : byte {
+	N64_PLAY,
+	N64_RECORD
+};

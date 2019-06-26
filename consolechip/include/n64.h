@@ -14,12 +14,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-namespace SerialLink {
-	void init();
+#pragma once
 
-	uint8_t read();
-	void write(uint8_t data);
+#include <Arduino.h>
+#include "config.h"
 
-	void beginWrite(uint8_t data);
-	bool available();
-};
+namespace N64 {
+	void playback();
+	void record();
+}
