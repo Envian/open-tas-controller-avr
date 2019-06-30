@@ -25,10 +25,13 @@ byte bits = 0;
 
 void setup() {
 	SerialLink::init();
-	SerialLink::write(HANDSHAKE);
-	runConsole((PlaybackMode)SerialLink::read());
+	pinMode(13, OUTPUT);
+	//runConsole((PlaybackMode)SerialLink::read());
 }
 
 void loop() {
-	// nope.
+	if (SerialLink::read() != bits) {
+		digitalWrite(13, HIGH);
+	}
+	bits++;
 }

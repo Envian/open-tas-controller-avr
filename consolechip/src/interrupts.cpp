@@ -14,19 +14,5 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#pragma once
-
-#include <Arduino.h>
-#include "config.h"
-
-// Must be byte size for buffer size calc.
-#define BUFFER_SIZE 256
-
-namespace Buffer {
-	volatile uint8_t buffer[BUFFER_SIZE];
-	volatile uint8_t* volatile readptr = &buffer[0];
-	volatile uint8_t* volatile writeptr = &buffer[0];
-
-	void writeByte(uint8_t data) ;
-	uint8_t readByte();
+namespace Interrupts {
 }

@@ -21,20 +21,24 @@
 #include "seriallink.h"
 
 namespace Buffer {
-	void fillBuffer() {
-		while (true) {
-			*writeptr = SerialLink::read();
-			// Stop writing when this it catches up to the reader.
-			while ((readptr - writeptr) == 1);
-			writeptr++;
+	boolean canWrite() {
+		return (readptr - writeptr) != 1;
+	}
+
+	void writeByte(uint8_t data) {
+		*writeptr = data;
+		writeptr++;
+
+		if (writeptr == &buffer[0] + BUFFER_SIZE) {
+			writeptr = &buffer[0];
 		}
 	}
-	uint8_t getByte() {
-		if (readptr == writeptr) {
-			//panic
-			while (true);
-		}
 
+	boolean canRead() {
+		return readptr != writeptr;
+	}
+
+	uint8_t readByte() {
 		uint8_t data = *readptr;
 		readptr++;
 		return data;

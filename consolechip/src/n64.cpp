@@ -19,9 +19,23 @@
 
 #include "n64.h"
 
+// N64 uses pin 1 on each controller, and nothing else.
+// #define CTRL_DIR CONTROLLER_DIR_AB
+// #define CTRL_DATA CONTROLLER_DATA_AB
+// #define CTRL_INPUT CONTROLLER_INPUT_AB
+//
+// #define CTRLMASK_1 (1 << CONTROLLER1A)
+// #define CTRLMASK_2 (1 << CONTROLLER1B)
+// #define CTRLMASK_3 (1 << CONTROLELR1C)
+// #define CTRLMASK_4 (1 << CONTROLLER1C)
+// #define CTRLMASK_ALL (CTRLMASK_1 | CTRLMASK_2 | CTRLMASK_3 | CTRLMASK_4)
+
 namespace N64 {
 	void playback() {
-		// TODO
+		// Sets pins to input and low.
+		// CTRL_DIR = 0;
+		// CTRL_DATA = 0;
+
 	}
 
 	void record() {

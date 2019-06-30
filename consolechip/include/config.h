@@ -13,16 +13,28 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
 #pragma once
+#include <Arduino.h>
 
 /*******************************************************************************
-*                                     LINK                                     *
+*                                     PINS                                     *
 *******************************************************************************/
-// For the console chip, runs on analog 0 and analog 1.
-// Having both pins on the same port improves performance
-#define LINK_DIR DDRC
-#define LINK_DATA PORTC
-#define LINK_INPUT PINC
-#define LINK_HIGHPIN 0
-#define LINK_LOWPIN 1
+// Chip Communication Pins. Must be on the same port.
+#define LINK_HIGHPIN PIN_A0
+#define LINK_LOWPIN PIN_A1
+
+// Console Pins
+#define CONTROLLER1A 0
+#define CONTROLLER1B 2
+#define CONTROLLER2A 1
+#define CONTROLLER2B 3
+#define CONTROLLER3A 4
+#define CONTROLLER3B 6
+#define CONTROLLER4A 5
+#define CONTROLLER4B 7
+
+// Pin C for each controller is on CONTROLLER_DIR3 and are the bit for that pin
+#define CONTROLLER1C 8
+#define CONTROLLER2C 9
+#define CONTROLLER3C 10
+#define CONTROLLER4C 11

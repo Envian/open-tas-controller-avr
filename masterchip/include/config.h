@@ -13,16 +13,15 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-#include "../common.h"
+#pragma once
+#include <Arduino.h>
 
 /*****************************************************************************
- *                                   LINK                                    *
+ *                                   PINS                                    *
  *****************************************************************************/
-// For the master chip, runs on digital 10 and digital 9.
-// Having both pins on the same port improves performance, and is required.
-#define LINK_DIR DDRB
-#define LINK_DATA PORTB
-#define LINK_INPUT PINB
-#define LINK_HIGHPIN 2
-#define LINK_LOWPIN 1
+// These pins are for the 2 pin link to the console chip.
+#define LINK_HIGHPIN 10
+#define LINK_LOWPIN 9
+
+// This pin resets the console chip.
+#define RESET_PIN 2

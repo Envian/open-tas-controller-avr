@@ -15,12 +15,23 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <Arduino.h>
-
 #include "config.h"
+#include "pinregisters.h"
+
 #include "seriallink.h"
 
-#define HIGHMASK (1 << LINK_HIGHPIN)
-#define LOWMASK (1 << LINK_LOWPIN)
+#if _pinToPort(LINK_HIGHPIN) != _pinToPort(LINK_LOWPIN)
+#error Link port pins must both be on the same port.
+#endif
+
+#define LINK_PORT _pinToPort(LINK_HIGHPIN)
+
+#define LINK_MODE *_portModeRegister(LINK_PORT)
+#define LINK_INPUT *_portInputRegister(LINK_PORT)
+#define LINK_OUTPUT *_portOutputRegister(LINK_PORT)
+
+#define HIGHMASK _pinToBitMask(LINK_HIGHPIN)
+#define LOWMASK _pinToBitMask(LINK_LOWPIN)
 #define PINMASK (HIGHMASK | LOWMASK)
 
 namespace SerialLink {
@@ -28,8 +39,8 @@ namespace SerialLink {
 	byte state;
 
 	void init() {
-		LINK_DIR &= ~PINMASK; // Forces both pins to input.
-		LINK_DATA |= PINMASK; // Sets both to pullup
+		LINK_MODE &= ~PINMASK; // Forces both pins to input.
+		LINK_OUTPUT |= PINMASK; // Sets both to pullup
 	}
 
 	uint8_t read() {
@@ -45,13 +56,13 @@ namespace SerialLink {
 			result |= (responsePin == LOWMASK ? 1 : 0);
 
 			// Confirmation Process
-			LINK_DATA &= ~responsePin;
-			LINK_DIR |= responsePin;
+			LINK_OUTPUT &= ~responsePin;
+			LINK_MODE |= responsePin;
 
 			while ((LINK_INPUT & (responsePin ^ PINMASK)) == 0) {}
 
-			LINK_DATA |= responsePin;
-			LINK_DIR &= ~responsePin;
+			LINK_OUTPUT |= responsePin;
+			LINK_MODE &= ~responsePin;
 		}
 		return result;
 	}
@@ -62,13 +73,13 @@ namespace SerialLink {
 
 			while ((LINK_INPUT & PINMASK) != PINMASK) { }
 
-			LINK_DATA &= ~pin;
-			LINK_DIR |= pin;
+			LINK_OUTPUT &= ~pin;
+			LINK_MODE |= pin;
 
 			while ((LINK_INPUT & PINMASK) != 0) { }
 
-			LINK_DATA |= pin;
-			LINK_DIR &= ~pin;
+			LINK_OUTPUT |= pin;
+			LINK_MODE &= ~pin;
 
 			while ((LINK_INPUT & PINMASK) != PINMASK) { }
 		}
@@ -89,8 +100,8 @@ namespace SerialLink {
 			// Odd - Confirm
 			if ((LINK_INPUT & PINMASK) == 0) {
 				uint8_t pin = (((sending & B10000000) == 0) ? LOWMASK : HIGHMASK);
-				LINK_DATA |= pin;
-				LINK_DIR &= ~pin;
+				LINK_OUTPUT |= pin;
+				LINK_MODE &= ~pin;
 				sending <<= 1;
 				state--;
 			}
@@ -98,8 +109,8 @@ namespace SerialLink {
 			// Even - Send the bit when ready.
 			if ((LINK_INPUT & PINMASK) == PINMASK) {
 				uint8_t pin = (((sending & B10000000) == 0) ? LOWMASK : HIGHMASK);
-				LINK_DATA &= ~pin;
-				LINK_DIR |= pin;
+				LINK_OUTPUT &= ~pin;
+				LINK_MODE |= pin;
 				state--;
 			}
 		}
