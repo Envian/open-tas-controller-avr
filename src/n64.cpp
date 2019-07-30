@@ -14,16 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#include "n64.h"
-
 #include <Arduino.h>
+#include "n64.h"
 #include "config.h"
 #include "pinregisters.h"
 
 #include "oneline.h"
 #include "precision.h"
 #include "interrupts.h"
-#include "error.h"
 
 // N64 uses pin A on each controller, and nothing else.
 #define CTRLMASK_1 (_pinToBitMask(CONTROLLER1A))
@@ -73,10 +71,6 @@ namespace N64 {
 
 		while (!Serial.available());
 		const byte controllerCount = Serial.read();
-		// Only support 1 controller for now
-		if (controllerCount != 1) {
-			error(ERROR_UNSUPPORTED_CONTROLLERS);
-		}
 
 		while (true) {
 			Serial.write(INPUT_PACKAGE_SIZE);
@@ -98,10 +92,6 @@ namespace N64 {
 
 		while (!Serial.available());
 		const byte controllerCount = Serial.read();
-		// Only support 1 controller for now
-		if (controllerCount != 1) {
-			error(ERROR_UNSUPPORTED_CONTROLLERS);
-		}
 
 		byte buffer[4];
 

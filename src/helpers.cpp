@@ -15,7 +15,6 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <Arduino.h>
-
 #include "helpers.h"
 
 namespace Helpers {
@@ -23,13 +22,14 @@ namespace Helpers {
 		while (!Serial.available());
 		return (byte)Serial.read();
 	}
-	size_t readBytesBlocking(char* buffer, size_t length) {
-		while (Serial.available() < length);
+
+	void readBytesBlocking(char* buffer, size_t length) {
+		while ((size_t)Serial.available() < length);
 		Serial.readBytes(buffer, length);
 	}
 
-	size_t readBytesBlocking(uint8_t* buffer, size_t length) {
-		while (Serial.available() < length);
+	void readBytesBlocking(uint8_t* buffer, size_t length) {
+		while ((size_t)Serial.available() < length);
 		Serial.readBytes(buffer, length);
 	}
 }

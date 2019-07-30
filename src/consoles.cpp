@@ -19,7 +19,6 @@
 
 #include "config.h"
 #include "n64.h"
-#include "error.h"
 
 void runConsole(PlaybackMode mode) {
 	switch (mode) {
@@ -27,6 +26,5 @@ void runConsole(PlaybackMode mode) {
 	case N64_PLAY:   N64::playback(); break;
 	case N64_RECORD: N64::record(); break;
 #endif
-	default: error(ERROR_UNSUPPORTED_MODE); break;
 	}
 }

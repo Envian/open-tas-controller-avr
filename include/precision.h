@@ -13,7 +13,9 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 #pragma once
+#include <Arduino.h>
 
 #define waitCycles(cycles) switch(cycles % 3) { \
 case 2: asm volatile("\tNOP\n"); \

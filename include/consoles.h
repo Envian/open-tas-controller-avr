@@ -13,9 +13,10 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#pragma once
 
+#pragma once
 #include <Arduino.h>
+
 #include "config.h"
 
 enum Console : byte {

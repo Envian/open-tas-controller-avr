@@ -15,9 +15,10 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
+#include <Arduino.h>
 
 namespace Helpers {
 	byte readBlocking();
-	size_t readBytesBlocking(char* buffer, size_t length);
-	size_t readBytesBlocking(uint8_t* buffer, size_t length);
+	void readBytesBlocking(char* buffer, size_t length);
+	void readBytesBlocking(uint8_t* buffer, size_t length);
 }
