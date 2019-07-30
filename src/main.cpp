@@ -14,5 +14,22 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-namespace Interrupts {
+#include <Arduino.h>
+
+#include "config.h"
+#include "consoles.h"
+#include "helpers.h"
+
+byte bits = 0;
+
+void setup() {
+	Serial.begin(SERIAL_BAUD);
+}
+
+void loop() {
+	sendHeader();
+	runConsole((PlaybackMode)Helpers::readBlocking());
+
+	interrupts();
+	while (true);
 }

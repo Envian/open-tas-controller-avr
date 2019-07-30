@@ -13,10 +13,10 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#pragma once
 
-#include <Arduino.h>
-#include "config.h"
-#include "common.h"
 
-void runConsole(PlaybackMode console);
+// Errors are morse code - from least significant bit to most.
+#define ERROR_UNSUPPORTED_MODE 0b101
+#define ERROR_UNSUPPORTED_CONTROLLERS 0b111
+
+void error(unsigned long errorCode);

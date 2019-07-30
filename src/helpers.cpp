@@ -15,15 +15,21 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <Arduino.h>
-#include "config.h"
 
-#include "consoles.h"
+#include "helpers.h"
 
-#include "n64.h"
+namespace Helpers {
+	byte readBlocking() {
+		while (!Serial.available());
+		return (byte)Serial.read();
+	}
+	size_t readBytesBlocking(char* buffer, size_t length) {
+		while (Serial.available() < length);
+		Serial.readBytes(buffer, length);
+	}
 
-void runConsole(PlaybackMode mode) {
-	switch (mode) {
-	case N64_PLAY: N64::playback(); break;
-	case N64_RECORD: N64::record(); break;
+	size_t readBytesBlocking(uint8_t* buffer, size_t length) {
+		while (Serial.available() < length);
+		Serial.readBytes(buffer, length);
 	}
 }

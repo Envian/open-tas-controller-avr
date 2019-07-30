@@ -15,6 +15,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #pragma once
 
-namespace Interrupts {
-	void (*pinChange)(void);
+namespace N64 {
+	void playback();
+	void record();
 }

@@ -3,4 +3,4 @@
 .piolibdeps
 .clang_complete
 .gcc-flags.json
-**/__pycache__
+__pycache__

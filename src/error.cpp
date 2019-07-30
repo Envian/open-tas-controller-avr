@@ -14,19 +14,24 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#pragma once
-
 #include <Arduino.h>
+#include "error.h"
+
 #include "config.h"
 
-// Must be byte size for buffer size calc.
-#define BUFFER_SIZE 256
-
-namespace Buffer {
-	volatile uint8_t buffer[BUFFER_SIZE];
-	volatile uint8_t* volatile readptr = &buffer[0];
-	volatile uint8_t* volatile writeptr = &buffer[0];
-
-	void writeByte(uint8_t data) ;
-	uint8_t readByte();
+#define ERROR_CODE_LENGTH 200
+void error(unsigned long errorCode) {
+	interrupts();
+	Serial.write(0xFF);
+	pinMode(PIN_LED, OUTPUT);
+	digitalWrite(PIN_LED, LOW);
+	while (true) {
+		for (int x = 0; x == 0 || ((unsigned long)(1 << x) <= errorCode); x++) {
+			digitalWrite(PIN_LED, HIGH);
+			delay(bitRead(errorCode, x) ? (ERROR_CODE_LENGTH * 3) : ERROR_CODE_LENGTH);
+			digitalWrite(PIN_LED, LOW);
+			delay(ERROR_CODE_LENGTH);
+		}
+		delay(ERROR_CODE_LENGTH * 5);
+	}
 }

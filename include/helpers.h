@@ -13,15 +13,11 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 #pragma once
-#include <Arduino.h>
 
-/*****************************************************************************
- *                                   PINS                                    *
- *****************************************************************************/
-// These pins are for the 2 pin link to the console chip.
-#define LINK_HIGHPIN 10
-#define LINK_LOWPIN 9
-
-// This pin resets the console chip.
-#define RESET_PIN 2
+namespace Helpers {
+	byte readBlocking();
+	size_t readBytesBlocking(char* buffer, size_t length);
+	size_t readBytesBlocking(uint8_t* buffer, size_t length);
+}

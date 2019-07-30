@@ -13,32 +13,24 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#pragma once
 
 #include <Arduino.h>
 #include "config.h"
 
-#include "n64.h"
+#define VERSION 0
 
-// N64 uses pin 1 on each controller, and nothing else.
-// #define CTRL_DIR CONTROLLER_DIR_AB
-// #define CTRL_DATA CONTROLLER_DATA_AB
-// #define CTRL_INPUT CONTROLLER_INPUT_AB
-//
-// #define CTRLMASK_1 (1 << CONTROLLER1A)
-// #define CTRLMASK_2 (1 << CONTROLLER1B)
-// #define CTRLMASK_3 (1 << CONTROLELR1C)
-// #define CTRLMASK_4 (1 << CONTROLLER1C)
-// #define CTRLMASK_ALL (CTRLMASK_1 | CTRLMASK_2 | CTRLMASK_3 | CTRLMASK_4)
+enum Console : byte {
+	CONSOLE_N64 = 0,
+};
 
-namespace N64 {
-	void playback() {
-		// Sets pins to input and low.
-		// CTRL_DIR = 0;
-		// CTRL_DATA = 0;
+enum PlaybackMode : byte {
+	FLAG_PLAYBACK = 1 << 6,
+	FLAG_RECORD = 1 << 7,
 
-	}
+	N64_PLAY = CONSOLE_N64 | FLAG_PLAYBACK,
+	N64_RECORD = CONSOLE_N64 | FLAG_RECORD
+};
 
-	void record() {
-		// TODO
-	}
-}
+void sendHeader();
+void runConsole(PlaybackMode console);

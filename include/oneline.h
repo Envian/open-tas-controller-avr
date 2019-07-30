@@ -13,17 +13,12 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#pragma once
 
 #include <Arduino.h>
-#include "config.h"
 
-namespace SerialLink {
-	void init();
-
-	uint8_t read();
-	void write(uint8_t data);
-
-	void beginWrite(uint8_t data);
-	bool available();
-};
+namespace OneLine {
+	void init(const byte mask);
+	void writeBytes(const byte* data, byte count, const byte mask);
+	byte readByte(byte* const mask);
+	void endRead(const byte mask);
+}

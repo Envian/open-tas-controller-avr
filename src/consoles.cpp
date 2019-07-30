@@ -15,32 +15,22 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <Arduino.h>
+#include "consoles.h"
+
 #include "config.h"
+#include "n64.h"
+#include "error.h"
 
-#include "buffer.h"
-#include "seriallink.h"
+void sendHeader() {
+	Serial.write(VERSION);
+}
 
-namespace Buffer {
-	boolean canWrite() {
-		return (readptr - writeptr) != 1;
-	}
-
-	void writeByte(uint8_t data) {
-		*writeptr = data;
-		writeptr++;
-
-		if (writeptr == &buffer[0] + BUFFER_SIZE) {
-			writeptr = &buffer[0];
-		}
-	}
-
-	boolean canRead() {
-		return readptr != writeptr;
-	}
-
-	uint8_t readByte() {
-		uint8_t data = *readptr;
-		readptr++;
-		return data;
+void runConsole(PlaybackMode mode) {
+	switch (mode) {
+#ifdef N64_SUPPORT
+	case N64_PLAY:   N64::playback(); break;
+	case N64_RECORD: N64::record(); break;
+#endif
+	default: error(ERROR_UNSUPPORTED_MODE); break;
 	}
 }

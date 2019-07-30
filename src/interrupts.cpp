@@ -13,13 +13,17 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#include <Arduino.h>
+#include "interrupts.h"
 
-namespace SerialLink {
-	void init();
+namespace Interrupts {
+	void disableRegisters() {
+		EIMSK = 0; // Disables hardware pin interrupts
+		PCICR = 0; // Disables pin change interrupts
 
-	uint8_t read();
-	void write(uint8_t data);
-
-	void beginWrite(uint8_t data);
-	bool available();
-};
+		// Disables timer interrupts.
+		TIMSK0 = 0;
+		TIMSK1 = 0;
+		TIMSK2 = 0;
+	}
+}

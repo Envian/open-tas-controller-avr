@@ -15,7 +15,6 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #pragma once
 
-enum PlaybackMode : byte {
-	N64_PLAY,
-	N64_RECORD
-};
+namespace Interrupts {
+	void disableRegisters();
+}
