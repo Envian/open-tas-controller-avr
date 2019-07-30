@@ -27,9 +27,15 @@ void setup() {
 }
 
 void loop() {
-	sendHeader();
-	runConsole((PlaybackMode)Helpers::readBlocking());
-
-	interrupts();
-	while (true);
+	switch (Helpers::readBlocking()) {
+	case 0xA: // Begin Playback
+		runConsole((PlaybackMode)Helpers::readBlocking());
+		break;
+	case 0x10: // Describe
+		Serial.write("Open TAS Controller");
+		break;
+	case 0x11: // Version
+		Serial.write((byte)VERSION);
+		break;
+	}
 }

@@ -83,6 +83,10 @@ namespace N64 {
 			while (Serial.available() < INPUT_PACKAGE_SIZE);
 			Serial.readBytes(&inputs[0], INPUT_PACKAGE_SIZE);
 
+			if ((inputs[0] & inputs[1] & inputs[2] & inputs[3]) == 0xFF) {
+				return;
+			}
+
 			noInterrupts();
 			sendInput(&inputs[0], CTRLMASK_1, CTRLMASK_1);
 			interrupts();
@@ -103,19 +107,19 @@ namespace N64 {
 
 		while (true) {
 			noInterrupts();
-			byte mask = CTRLMASK_1;
+			byte currentMask = CTRLMASK_1;
 			while (true) {
-				byte mask = allMasks;
+				byte mask = currentMask;
 				switch (OneLine::readByte(&mask)) {
 				case 0x00: // Controller Status
 				case 0xFF: // Reset Controller
 					OneLine::endRead(mask);
-					OneLine::readBytes(&buffer, 3, mask);
+					OneLine::readBytes(buffer, 3, mask);
 					OneLine::endRead(mask);
 					break;
 				case 0x01: // Get Inputs
 					OneLine::endRead(mask);
-					OneLine::readBytes(&buffer, 4, mask);
+					OneLine::readBytes(buffer, 4, mask);
 					OneLine::endRead(mask);
 					Serial.write(buffer, 4);
 					break;

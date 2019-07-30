@@ -18,19 +18,18 @@
 #include <Arduino.h>
 #include "config.h"
 
-#define VERSION 0
-
 enum Console : byte {
-	CONSOLE_N64 = 0,
+	CONSOLE_N64 = 0
 };
 
 enum PlaybackMode : byte {
 	FLAG_PLAYBACK = 1 << 6,
 	FLAG_RECORD = 1 << 7,
 
+#ifdef N64_SUPPORT
 	N64_PLAY = CONSOLE_N64 | FLAG_PLAYBACK,
 	N64_RECORD = CONSOLE_N64 | FLAG_RECORD
+#endif
 };
 
-void sendHeader();
 void runConsole(PlaybackMode console);

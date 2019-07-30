@@ -61,7 +61,10 @@
 /*******************************************************************************
 *                        Common Values & Sanity Checks                         *
 *******************************************************************************/
+
 // Don't modify any of these
+#define VERSION 0
+
 #define CONTROLLER_PORT_AB (_pinToPort(CONTROLLER1A))
 #define CONTROLLER_INPUT_AB (*_portInputRegister(CONTROLLER_PORT_AB))
 #define CONTROLLER_OUTPUT_AB (*_portOutputRegister(CONTROLLER_PORT_AB))

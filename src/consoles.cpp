@@ -21,10 +21,6 @@
 #include "n64.h"
 #include "error.h"
 
-void sendHeader() {
-	Serial.write(VERSION);
-}
-
 void runConsole(PlaybackMode mode) {
 	switch (mode) {
 #ifdef N64_SUPPORT
