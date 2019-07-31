@@ -14,9 +14,10 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#include <Arduino.h>
+#pragma once
 
-FASTRUN unsigned long readBits(int count);
-FASTRUN void endRead();
-FASTRUN void writeBits(unsigned long bits, int count);
-FASTRUN void writeZeros(int count);
+namespace Helpers {
+	byte readBlocking();
+	size_t readBytesBlocking(char* buffer, size_t length);
+	size_t readBytesBlocking(uint8_t* buffer, size_t length);
+}

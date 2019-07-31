@@ -13,40 +13,23 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#pragma once
 
 #include <Arduino.h>
+#include "config.h"
 
-#include "error.h"
-#include "io.h"
-#include "precision.h"
+enum Console : byte {
+	CONSOLE_N64 = 0
+};
 
-FASTRUN void sendButton(unsigned long buttons) {
-	noInterrupts();
-	while (true) {
-		int cmd = readBits(8);
+enum PlaybackMode : byte {
+	FLAG_PLAYBACK = 1 << 6,
+	FLAG_RECORD = 1 << 7,
 
-		switch (cmd) {
-			case 0x00: // Controller status
-			case 0xFF: // Reset Controller
-				endRead();
-				writeBits(0x050000, 24);
-				break;
-			case 0x01: // Poll Inputs
-				endRead();
-				writeBits(buttons, 32);
-				interrupts();
-				return;
-			case 0x02: // Read
-				readBits(16); // Reads two extra address bytes.
-				endRead();
-				writeZeros(33 * 8);
-				break;
-			case 0x03:
-				int address = readBits(16) >> 5;
-				readBits(32 * 8);
-				endRead();
-				// TODO: respond here.
-				break;
-		}
-	}
-}
+#ifdef N64_SUPPORT
+	N64_PLAY = CONSOLE_N64 | FLAG_PLAYBACK,
+	N64_RECORD = CONSOLE_N64 | FLAG_RECORD
+#endif
+};
+
+void runConsole(PlaybackMode console);

@@ -15,12 +15,14 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <Arduino.h>
+#include "error.h"
 
-#include "pinout.h"
+#include "config.h"
 
 #define ERROR_CODE_LENGTH 200
 void error(unsigned long errorCode) {
 	interrupts();
+	Serial.write(0xFF);
 	pinMode(PIN_LED, OUTPUT);
 	digitalWrite(PIN_LED, LOW);
 	while (true) {

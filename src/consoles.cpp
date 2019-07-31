@@ -15,6 +15,18 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <Arduino.h>
+#include "consoles.h"
 
-void initializeSD();
-unsigned long getNextInput();
+#include "config.h"
+#include "n64.h"
+#include "error.h"
+
+void runConsole(PlaybackMode mode) {
+	switch (mode) {
+#ifdef N64_SUPPORT
+	case N64_PLAY:   N64::playback(); break;
+	case N64_RECORD: N64::record(); break;
+#endif
+	default: error(ERROR_UNSUPPORTED_MODE); break;
+	}
+}

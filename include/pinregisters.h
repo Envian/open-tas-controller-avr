@@ -13,29 +13,21 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
+#pragma once
 
 #include <Arduino.h>
 
-#include "config.h"
-#include "consoles.h"
-#include "helpers.h"
+// Guess we don't have these defined.
+#define PB 2
+#define PC 3
+#define PD 4
 
-byte bits = 0;
+// Why doesn't arduino include these macros?
+// These are set up for Arduino Nanos - Atmega 328p
 
-void setup() {
-	Serial.begin(SERIAL_BAUD);
-}
+#define _pinToPort(p) (((p) <= 7) ? PD : (((p) <= 13) ? PB : (((p) <= 21) ? PC : NOT_A_PORT)))
+#define _pinToBitMask(p) (((p) <= 13) ? (1 << ((p) % 8)) : (1 << ((p) - 14)))
 
-void loop() {
-	switch (Helpers::readBlocking()) {
-	case 0xA: // Begin Playback
-		runConsole((PlaybackMode)Helpers::readBlocking());
-		break;
-	case 0x10: // Describe
-		Serial.write("Open TAS Controller");
-		break;
-	case 0x11: // Version
-		Serial.write((byte)VERSION);
-		break;
-	}
-}
+#define _portModeRegister(p) (((p) == PB) ? (&DDRB) : (((p) == PC) ? (&DDRC) : (((p) == PD) ? (&DDRD) : (NOT_A_PORT))))
+#define _portInputRegister(p) (((p) == PB) ? (&PINB) : (((p) == PC) ? (&PINC) : (((p) == PD) ? (&PIND) : (NOT_A_PORT))))
+#define _portOutputRegister(p) (((p) == PB) ? (&PORTB) : (((p) == PC) ? (&PORTC) : (((p) == PD) ? (&PORTD) : (NOT_A_PORT))))

@@ -14,15 +14,22 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-// PINS
-#define PIN_MODE 0
-#define PIN_LED 13
+#include <Arduino.h>
 
-// Console pin needs extra defines to go fast
-#define PIN_CONSOLE 2
-#define CONSOLE_PINMODE_REG CORE_PIN2_DDRREG
-#define CONSOLE_PINMODE_MASK CORE_PIN2_BITMASK
+#include "helpers.h"
 
-#if PIN_CONSOLE == 17
-#error "Don't use pin 17. It'll fry your N64"
-#endif
+namespace Helpers {
+	byte readBlocking() {
+		while (!Serial.available());
+		return (byte)Serial.read();
+	}
+	size_t readBytesBlocking(char* buffer, size_t length) {
+		while (Serial.available() < length);
+		Serial.readBytes(buffer, length);
+	}
+
+	size_t readBytesBlocking(uint8_t* buffer, size_t length) {
+		while (Serial.available() < length);
+		Serial.readBytes(buffer, length);
+	}
+}

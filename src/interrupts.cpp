@@ -13,7 +13,17 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
 #include <Arduino.h>
+#include "interrupts.h"
 
-FASTRUN void sendButton(unsigned long buttons);
+namespace Interrupts {
+	void disableRegisters() {
+		EIMSK = 0; // Disables hardware pin interrupts
+		PCICR = 0; // Disables pin change interrupts
+
+		// Disables timer interrupts.
+		TIMSK0 = 0;
+		TIMSK1 = 0;
+		TIMSK2 = 0;
+	}
+}

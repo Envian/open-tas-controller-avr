@@ -16,7 +16,7 @@
 
 
 // Errors are morse code - from least significant bit to most.
-#define ERROR_SD_CARD 0b1101100
-#define ERROR_EOF 0b001
+#define ERROR_UNSUPPORTED_MODE 0b101
+#define ERROR_UNSUPPORTED_CONTROLLERS 0b111
 
 void error(unsigned long errorCode);

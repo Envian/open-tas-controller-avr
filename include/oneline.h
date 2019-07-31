@@ -16,26 +16,10 @@
 
 #include <Arduino.h>
 
-#include "config.h"
-#include "consoles.h"
-#include "helpers.h"
-
-byte bits = 0;
-
-void setup() {
-	Serial.begin(SERIAL_BAUD);
-}
-
-void loop() {
-	switch (Helpers::readBlocking()) {
-	case 0xA: // Begin Playback
-		runConsole((PlaybackMode)Helpers::readBlocking());
-		break;
-	case 0x10: // Describe
-		Serial.write("Open TAS Controller");
-		break;
-	case 0x11: // Version
-		Serial.write((byte)VERSION);
-		break;
-	}
+namespace OneLine {
+	void init(const byte mask);
+	void writeBytes(const byte* data, byte count, const byte mask);
+	byte readByte(byte* const mask);
+	void readBytes(byte* dest, const int count, byte mask);
+	void endRead(const byte mask);
 }
