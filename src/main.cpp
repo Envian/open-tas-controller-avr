@@ -20,22 +20,21 @@
 #include "consoles.h"
 #include "helpers.h"
 
-byte bits = 0;
-
 void setup() {
 	Serial.begin(SERIAL_BAUD);
+	Serial.write("Ready");
 }
 
 void loop() {
-	switch (Helpers::readBlocking()) {
+	switch (Serial.read()) {
 	case 0xA: // Begin Playback
 		runConsole((PlaybackMode)Helpers::readBlocking());
 		break;
-	case 0x10: // Describe
-		Serial.write("Open TAS Controller");
+	case 'd': // Describe
+		Serial.write("Open TAS Controller\n");
 		break;
-	case 0x11: // Version
-		Serial.write((byte)VERSION);
+	case 'v': // Version
+		Serial.write(STR(VERSION) "\n");
 		break;
 	}
 }

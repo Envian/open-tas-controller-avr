@@ -132,8 +132,8 @@ namespace OneLine {
 
 			"out %[portNumber], %[zero] \r\n"
 			// outputs (None are real)
-			: [counter] "=r" (count), [bitmask] "=r" (__scratch1), [currentByte] "=r" (__scratch2),
-			[pointer] "=x" (data), [scratch] "=r" (__scratch3)
+			: [counter] "+r" (count), [bitmask] "+r" (__scratch1), [currentByte] "+r" (__scratch2),
+			[pointer] "+x" (data), [scratch] "+r" (__scratch3)
 
 			// inputs
 			: "[counter]" (count), "[pointer]" (data), [zero] "r" (0),
@@ -161,6 +161,7 @@ namespace OneLine {
 
 			// Not sure how long this delay needs to be, but it doesn't matter too much
 			waitCycles(16);
+
 			result |= (CTRL_INPUT & *mask) ? 1 : 0;
 		}
 
