@@ -14,15 +14,23 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-// PINS
-#define PIN_MODE 0
-#define PIN_LED 13
+#pragma once
+#include <Arduino.h>
 
-// Console pin needs extra defines to go fast
-#define PIN_CONSOLE 2
-#define CONSOLE_PINMODE_REG CORE_PIN2_DDRREG
-#define CONSOLE_PINMODE_MASK CORE_PIN2_BITMASK
+#include "config.h"
 
-#if PIN_CONSOLE == 17
-#error "Don't use pin 17. It'll fry your N64"
+enum Console : byte {
+	CONSOLE_N64 = 0
+};
+
+enum PlaybackMode : byte {
+	FLAG_PLAYBACK = 1 << 6,
+	FLAG_RECORD = 1 << 7,
+
+#ifdef N64_SUPPORT
+	N64_PLAY = CONSOLE_N64 | FLAG_PLAYBACK,
+	N64_RECORD = CONSOLE_N64 | FLAG_RECORD
 #endif
+};
+
+void runConsole(PlaybackMode console);

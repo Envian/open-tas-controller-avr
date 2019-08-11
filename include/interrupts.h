@@ -14,7 +14,9 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+#pragma once
 #include <Arduino.h>
 
-FASTRUN unsigned long readBits(int count);
-FASTRUN void writeBits(unsigned long bits, int count);
+namespace Interrupts {
+	void disableRegisters();
+}

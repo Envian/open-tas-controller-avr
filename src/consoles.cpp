@@ -15,21 +15,16 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <Arduino.h>
+#include "consoles.h"
 
-#include "pinout.h"
+#include "config.h"
+#include "n64.h"
 
-#define ERROR_CODE_LENGTH 200
-void error(unsigned long errorCode) {
-	interrupts();
-	pinMode(PIN_LED, OUTPUT);
-	digitalWrite(PIN_LED, LOW);
-	while (true) {
-		for (int x = 0; x == 0 || ((unsigned long)(1 << x) <= errorCode); x++) {
-			digitalWrite(PIN_LED, HIGH);
-			delay(bitRead(errorCode, x) ? (ERROR_CODE_LENGTH * 3) : ERROR_CODE_LENGTH);
-			digitalWrite(PIN_LED, LOW);
-			delay(ERROR_CODE_LENGTH);
-		}
-		delay(ERROR_CODE_LENGTH * 5);
+void runConsole(PlaybackMode mode) {
+	switch (mode) {
+#ifdef N64_SUPPORT
+	case N64_PLAY:   N64::playback(); break;
+	case N64_RECORD: N64::record(); break;
+#endif
 	}
 }

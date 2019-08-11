@@ -14,31 +14,11 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+#pragma once
 #include <Arduino.h>
 
-#include "error.h"
-#include "io.h"
-#include "precision.h"
-
-FASTRUN void sendButton(unsigned long buttons) {
-	noInterrupts();
-	while (true) {
-		unsigned long cmd = readBits(8);
-
-		// Delays long enough for the console to send its control bit
-		waitCycles(110);
-		waitCycles(110);
-
-		switch (cmd) {
-			// Some consoles ask with FF (SM64 US), others 00 (Army Men Sarge's Heros 2).
-			case 0x00:
-			case 0xFF:
-				writeBits(0b000000000000000010100000, 24);
-				break;
-			case 1:
-				writeBits(buttons, 32);
-				interrupts();
-				return;
-		}
-	}
+namespace Helpers {
+	byte readBlocking();
+	void readBytesBlocking(char* buffer, size_t length);
+	void readBytesBlocking(uint8_t* buffer, size_t length);
 }

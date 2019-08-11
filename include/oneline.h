@@ -14,27 +14,13 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+#pragma once
 #include <Arduino.h>
 
-#include "config.h"
-#include "consoles.h"
-#include "helpers.h"
-
-void setup() {
-	Serial.begin(SERIAL_BAUD);
-	Serial.write("Ready");
-}
-
-void loop() {
-	switch (Serial.read()) {
-	case 0xA: // Begin Playback
-		runConsole((PlaybackMode)Helpers::readBlocking());
-		break;
-	case 'd': // Describe
-		Serial.write("Open TAS Controller\n");
-		break;
-	case 'v': // Version
-		Serial.write(STR(VERSION) "\n");
-		break;
-	}
+namespace OneLine {
+	void init(const byte mask);
+	void writeBytes(const byte* data, byte count, const byte mask);
+	byte readByte(byte* const mask);
+	void readBytes(byte* dest, const int count, byte mask);
+	void endRead(const byte mask);
 }

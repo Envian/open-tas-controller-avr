@@ -14,9 +14,22 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+#include <Arduino.h>
+#include "helpers.h"
 
-// Errors are morse code - from least significant bit to most.
-#define ERROR_SD_CARD 0b1101100
-#define ERROR_EOF 0b001
+namespace Helpers {
+	byte readBlocking() {
+		while (!Serial.available());
+		return (byte)Serial.read();
+	}
 
-void error(unsigned long errorCode);
+	void readBytesBlocking(char* buffer, size_t length) {
+		while ((size_t)Serial.available() < length);
+		Serial.readBytes(buffer, length);
+	}
+
+	void readBytesBlocking(uint8_t* buffer, size_t length) {
+		while ((size_t)Serial.available() < length);
+		Serial.readBytes(buffer, length);
+	}
+}
