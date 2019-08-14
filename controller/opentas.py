@@ -22,8 +22,9 @@ import formats.helpers
 
 parser = ArgumentParser(description="Can play TAS's or record inputs from an Open TAS Controller.")
 parser.add_argument("port", action="store", help="The port that the arduino is on")
-parser.add_argument("-f", "--force", action="store_true", help="Bypasses sanity checks and forces the movie to play or record from the given port")
+parser.add_argument("--force", action="store_true", help="Bypasses sanity checks and forces the movie to play or record from the given port")
 parser.add_argument("-i", "--input", action="store", help="The file to playback")
+parser.add_argument("-f", "--format", action="store", help="Sets the format for the input or output file")
 parser.add_argument("-b", "--baud-rate", action="store", default=250000, help="Sets the baud rate used in communication. Defaults to 250,000")
 
 def main(arguments):
@@ -35,14 +36,23 @@ def main(arguments):
 		if arguments.force:
 			print("Warning: Connected device is not an OpenTAS Controller.")
 		else:
-			print("Error: Connected device is not an OpenTAS Controller. Use -f to force playback.")
+			print("Error: Connected device is not an OpenTAS Controller. Use --force to force playback.")
 			return
 
-	parser = formats.helpers.getFormatByName("mupen64")
-	if not parser.isMovie(arguments.input):
-		print("Error: input file is not the correct format. Expected: " + parser.getName())
-		return
+	#determine parser
+	parser = None
+	if arguments.format:
+		print("Using format: " + arguments.format)
+		parser = formats.helpers.getFormatByName("mupen64")
+		if not parser.isMovie(arguments.input):
+			print("Error: input file is not the correct format. Expected: " + parser.getName())
+			return
+	else:
+		print("Auto-detecting format...")
+		parser = formats.helpers.getFormatByFile(arguments.input)
+		print("Format detected: " + parser.getName())
 
+	#begin playback
 	with parser.loadMovie(arguments.input) as movie:
 		port.play(movie)
 

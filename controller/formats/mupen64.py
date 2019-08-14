@@ -15,7 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 def getName():
-	return "Mupen64"
+	return "mupen64"
 
 def loadMovie(file):
 	return Mupen64Reader(file)

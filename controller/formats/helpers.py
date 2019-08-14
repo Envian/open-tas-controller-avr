@@ -20,6 +20,7 @@ import importlib
 
 def getFormatByFile(file):
 	paths = glob.glob(os.path.join(os.path.dirname(__file__), "*.py"))
+	return getFormatByName("mupen64")
 
 def getFormatByName(name):
 	try:
