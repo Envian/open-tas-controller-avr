@@ -19,10 +19,11 @@ from serial import Serial
 
 class TASController:
 	def __init__(self, port, baud):
-		self.__port = Serial(port, baud)
+		self.__port = Serial(port, baud, timeout=5)
+		self.isOpenTAS = self.__port.read(7) == b"OpenTAS"
+		self.__port.timeout = None
 
 	def play(self, movie):
-		self.__port.read(5)
 		self.__port.write(bytearray([0x0A])) # begin playback
 		self.__port.write(bytearray([movie.system]))
 		self.__port.write(bytearray([movie.controllers]))

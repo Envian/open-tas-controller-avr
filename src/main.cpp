@@ -22,7 +22,7 @@
 
 void setup() {
 	Serial.begin(SERIAL_BAUD);
-	Serial.write("Ready");
+	Serial.write("OpenTAS");
 }
 
 void loop() {
