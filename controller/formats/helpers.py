@@ -14,41 +14,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-def getName():
-	return "Mupen64"
+import os
+import glob
+import importlib
 
-def loadMovie(file):
-	return Mupen64Reader(file)
+def getFormatByFile(file):
+	paths = glob.glob(os.path.join(os.path.dirname(__file__), "*.py"))
 
-def isMovie(file):
-	return True
+def getFormatByName(name):
+	try:
+		targetModule = importlib.import_module("formats." + name)
+		return targetModule
+	except ImportException:
+		raise Error("Unable to find format file: " + name + ".py")
 
-class Mupen64Reader:
-	def __init__(self, path):
-		self.__path = path
-		self.system = 0x40
-		self.eof = False
-
-	def __enter__(self):
-		self.open()
-		return self
-
-	def __exit__(self, type, value, traceback):
-		self.close()
-
-	def open(self):
-		self.__file = open(self.__path, "rb")
-		#TODO: Load this from the mupen file
-		self.controllers = 1
-		self.__file.seek(0x400)
-
-	def close(self):
-		self.__file.close()
-
-	def getInputs_player1(self):
-		return self.__getInputs()
-
-	def __getInputs(self):
-		inputs = self.__file.read(4)
-		self.eof = len(inputs) != 4
-		return inputs
+def importModule(path):
+	pass

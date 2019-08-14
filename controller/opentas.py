@@ -18,7 +18,7 @@
 
 from argparse import ArgumentParser
 from core.connection import TASController
-import formats.mupen64
+import formats.helpers
 
 parser = ArgumentParser(description="Can play TAS's or record inputs from an Open TAS Controller.")
 parser.add_argument("port", action="store", help="The port that the arduino is on")
@@ -38,8 +38,12 @@ def main(arguments):
 			print("Error: Connected device is not an OpenTAS Controller. Use -f to force playback.")
 			return
 
+	parser = formats.helpers.getFormatByName("mupen64")
+	if not parser.isMovie(arguments.input):
+		print("Error: input file is not the correct format. Expected: " + parser.getName())
+		return
 
-	with formats.mupen64.loadMovie(arguments.input) as movie:
+	with parser.loadMovie(arguments.input) as movie:
 		port.play(movie)
 
 main(parser.parse_args())
