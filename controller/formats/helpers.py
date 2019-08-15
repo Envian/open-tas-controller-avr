@@ -19,9 +19,9 @@ import glob
 import importlib
 
 def listFormats():
-	modules = [mod.replace("/", ".")[:-3] for mod in glob.glob("*.py")]
+	modules = [os.path.split(mod)[-1][:-3] for mod in glob.glob(os.path.join(os.path.dirname(__file__), "*.py"))]
 	modules.remove("__init__")
-	modules.remove(__name__)
+	modules.remove(__name__.split(".")[-1])
 	return modules
 
 def getFormatByFile(file):
