@@ -64,6 +64,17 @@ def main(arguments):
 		if movie.rom: print("ROM:    " + movie.rom)
 		if movie.author: print("Author: " + movie.author)
 		if movie.description: print("Desc:   " + movie.description)
-		port.play(movie)
+		print("")
+		port.play(movie, progressBar)
+
+def progressBar(movie, frame, inputs):
+	progress = frame / movie.frames
+	icon = ["|", "/", "-", "\\"][frame % 4]
+
+	line = "{0: >7}/{1} [{3: <50}] {2:.1%} {4}".format(frame, movie.frames, progress, "#" * int(progress * 50), icon)
+
+	print(line, end="", flush=True)
+	print("\b" * len(line), end="")
+
 
 main(parser.parse_args())
