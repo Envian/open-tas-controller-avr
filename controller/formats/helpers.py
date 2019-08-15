@@ -18,16 +18,23 @@ import os
 import glob
 import importlib
 
+def listFormats():
+	modules = [mod.replace("/", ".")[:-3] for mod in glob.glob("*.py")]
+	modules.remove("__init__")
+	modules.remove(__name__)
+	return modules
+
 def getFormatByFile(file):
-	paths = glob.glob(os.path.join(os.path.dirname(__file__), "*.py"))
-	return getFormatByName("mupen64")
+	for format in listFormats():
+		targetModule = getFormatByName(format)
+		if targetModule.isMovie(file):
+			return targetModule
+	return None
+
 
 def getFormatByName(name):
 	try:
 		targetModule = importlib.import_module("formats." + name)
 		return targetModule
-	except ImportException:
-		raise Error("Unable to find format file: " + name + ".py")
-
-def importModule(path):
-	pass
+	except ImportError:
+		raise Exception("Format unsupported. Unable to find format file: " + name + ".py")

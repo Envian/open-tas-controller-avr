@@ -50,6 +50,11 @@ def main(arguments):
 	else:
 		print("Auto-detecting format...")
 		parser = formats.helpers.getFormatByFile(arguments.input)
+
+		if not parser:
+			print("Error: Unknown file format.")
+			return
+
 		print("Format detected: " + parser.getName())
 
 	#begin playback
