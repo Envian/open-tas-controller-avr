@@ -23,14 +23,21 @@ class TASController:
 		self.isOpenTAS = self.__port.read(7) == b"OpenTAS"
 		self.__port.timeout = None
 
-	def play(self, movie):
+	def play(self, movie, statusFunction = None):
 		self.__port.write(bytearray([0x0A])) # begin playback
 		self.__port.write(bytearray([movie.system]))
 		self.__port.write(bytearray([movie.controllers]))
 
+		frame = 0
+
 		while not movie.eof:
 			size = self.__port.read(1)[0]
-			self.__port.write(movie.getInputs_player1())
+			if size == 0xFF: break
+
+			data = movie.getInputs_player1()
+			self.__port.write(data)
+			if (statusFunction): statusFunction(movie, frame, data)
+			frame += 1
 
 		self.__port.write([0xFF, 0xFF, 0xFF, 0xFF])
 

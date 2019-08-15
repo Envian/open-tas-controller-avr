@@ -61,6 +61,9 @@ def main(arguments):
 
 	#begin playback
 	with parser.loadMovie(arguments.input) as movie:
+		if movie.rom: print("ROM:    " + movie.rom)
+		if movie.author: print("Author: " + movie.author)
+		if movie.description: print("Desc:   " + movie.description)
 		port.play(movie)
 
 main(parser.parse_args())
