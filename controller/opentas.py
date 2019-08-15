@@ -57,6 +57,8 @@ def main(arguments):
 
 		print("Format detected: " + parser.getName())
 
+	print("")
+
 	#begin playback
 	with parser.loadMovie(arguments.input) as movie:
 		port.play(movie)

@@ -14,20 +14,37 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+from formats.helpers import readAt, readAtInt
+
 def getName():
-	return "mupen64"
+	return "Mupen64"
 
 def loadMovie(file):
 	return Mupen64Reader(file)
 
 def isMovie(file):
-	return True
+	#N.B: There's a few properties that we may want to consider that would make replays harder:
+	#   Version (0x04) - Only 3 is supported now.
+	#   Movie Type (0x1C) - Should be 2 (From power on), not 1 (From snapshot)
+	#   Controller Flags (0x20) - Does not currently support perriphreals
+	with open(file, "rb") as movie:
+		return movie.read(4) == b"M64\x1A"
 
 class Mupen64Reader:
 	def __init__(self, path):
 		self.__path = path
-		self.system = 0x40
 		self.eof = False
+
+		self.system = 0x40
+		self.author = None
+		self.description = None
+		self.controllers = None
+		self.frames = None
+		self.rerecords = None
+		self.rom = None
+		self.romcrc = None
+		self.countrycode = None
+
 
 	def __enter__(self):
 		self.open()
@@ -38,8 +55,16 @@ class Mupen64Reader:
 
 	def open(self):
 		self.__file = open(self.__path, "rb")
-		#TODO: Load this from the mupen file
-		self.controllers = 1
+
+		self.author = readAt(self.__file, 0x0222, 222).decode().strip("\x00")
+		self.description = readAt(self.__file, 0x0300, 256).decode().strip("\x00")
+		self.controllers = readAt(self.__file, 0x15)[0]
+		self.frames = readAtInt(self.__file, 0x0C)
+		self.rerecords = readAtInt(self.__file, 0x10)
+		self.rom = readAt(self.__file, 0xC4, 32).decode().strip("\x00")
+		self.romcrc = readAtInt(self.__file, 0xE4)
+		self.countrycode = readAtInt(self.__file, 0xE8, size=2)
+
 		self.__file.seek(0x400)
 
 	def close(self):

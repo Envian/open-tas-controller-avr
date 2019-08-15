@@ -38,3 +38,16 @@ def getFormatByName(name):
 		return targetModule
 	except ImportError:
 		raise Exception("Format unsupported. Unable to find format file: " + name + ".py")
+
+def readAt(stream, position, count = 1):
+	stream.seek(position)
+	return stream.read(count)
+
+def readAtInt(stream, position, size = 4, littleEndian = True):
+	raw = readAt(stream, position, 4)
+	if littleEndian: raw = raw[::-1]
+
+	value = 0
+	for byte in raw:
+		value = value * 256 + byte
+	return value
