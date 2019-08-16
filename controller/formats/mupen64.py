@@ -27,48 +27,24 @@ def isMovie(file):
 	#   Version (0x04) - Only 3 is supported now.
 	#   Movie Type (0x1C) - Should be 2 (From power on), not 1 (From snapshot)
 	#   Controller Flags (0x20) - Does not currently support perriphreals
-	with open(file, "rb") as movie:
-		return movie.read(4) == b"M64\x1A"
+	return readAt(file, 0, 4) == b"M64\x1A"
 
 class Mupen64Reader:
-	def __init__(self, path):
-		self.__path = path
-		self.eof = False
+	def __init__(self, file):
+		self.__file = file
+		self.eof = None
 
-		self.system = 0x40
-		self.author = None
-		self.description = None
-		self.controllers = None
-		self.frames = None
-		self.rerecords = None
-		self.rom = None
-		self.romcrc = None
-		self.countrycode = None
+		self.system = 0x40 # Nintendo 64
+		self.author = readAt(file, 0x0222, 222).decode().strip("\x00")
+		self.description = readAt(file, 0x0300, 256).decode().strip("\x00")
+		self.controllers = readAt(file, 0x15)[0]
+		self.frames = readAtInt(file, 0x18)
+		self.rerecords = readAtInt(file, 0x10)
+		self.rom = readAt(file, 0xC4, 32).decode().strip("\x00")
+		self.romcrc = readAtInt(file, 0xE4)
+		self.countrycode = readAtInt(file, 0xE8, size=2)
 
-
-	def __enter__(self):
-		self.open()
-		return self
-
-	def __exit__(self, type, value, traceback):
-		self.close()
-
-	def open(self):
-		self.__file = open(self.__path, "rb")
-
-		self.author = readAt(self.__file, 0x0222, 222).decode().strip("\x00")
-		self.description = readAt(self.__file, 0x0300, 256).decode().strip("\x00")
-		self.controllers = readAt(self.__file, 0x15)[0]
-		self.frames = readAtInt(self.__file, 0x18)
-		self.rerecords = readAtInt(self.__file, 0x10)
-		self.rom = readAt(self.__file, 0xC4, 32).decode().strip("\x00")
-		self.romcrc = readAtInt(self.__file, 0xE4)
-		self.countrycode = readAtInt(self.__file, 0xE8, size=2)
-
-		self.__file.seek(0x400)
-
-	def close(self):
-		self.__file.close()
+		file.seek(0x400)
 
 	def getInputs_player1(self):
 		return self.__getInputs()

@@ -28,45 +28,65 @@ parser.add_argument("-f", "--format", action="store", help="Sets the format for 
 parser.add_argument("-b", "--baud-rate", action="store", default=250000, help="Sets the baud rate used in communication. Defaults to 250,000")
 
 def main(arguments):
-	print("Connecting to OpenTAS Controller on: " + arguments.port)
-	port = TASController(arguments.port, arguments.baud_rate)
+	port = connectToController(arguments.port, arguments.baud_rate, arguments.force)
+	input, output = getStreams(arguments.input, None)
+	format = getFormat(arguments.format, input)
+
+	if input:
+		with input:
+			movie = format.loadMovie(input)
+			print("Beginning playback\n")
+			if movie.rom: print("ROM:    " + movie.rom)
+			if movie.author: print("Author: " + movie.author)
+			if movie.description: print("Desc:   " + movie.description)
+			port.play(movie, progressBar)
+	else:
+		pass
+		#todo: recording
+
+	print("\n")
+
+def connectToController(port, baudrate, force):
+	print("Connecting to OpenTAS Controller on: " + port)
+	controller = TASController(port, baudrate)
 	print("Connection successful.")
 
-	if not port.isOpenTAS:
-		if arguments.force:
+	if not controller.isOpenTAS:
+		if force:
 			print("Warning: Connected device is not an OpenTAS Controller.")
 		else:
-			print("Error: Connected device is not an OpenTAS Controller. Use --force to force playback.")
+			raise Abort("Connected device is not an OpenTAS Controller. Use --force to force playback.")
 			return
 
-	#determine parser
-	parser = None
-	if arguments.format:
-		print("Using format: " + arguments.format)
-		parser = formats.helpers.getFormatByName("mupen64")
-		if not parser.isMovie(arguments.input):
-			print("Error: input file is not the correct format. Expected: " + parser.getName())
-			return
+	return controller
+
+def getStreams(input, output):
+	if input:
+		return (open(input, "rb"), None)
 	else:
-		print("Auto-detecting format...")
-		parser = formats.helpers.getFormatByFile(arguments.input)
+		return (None, open(output, "wb"))
+
+def getFormat(format, input):
+	if format:
+		parser = formats.helpers.getFormatByName(format)
+
+		if not parser.isMovie(input):
+			raise Abort("Input file is not the correct format. Expected: " + parser.getName())
+
+		return parser
+	elif input:
+		print("Auto-detecting format...", end="", flush=True)
+		parser = formats.helpers.getFormatByFile(input)
 
 		if not parser:
-			print("Error: Unknown file format.")
-			return
+			print(" Failed!")
+			raise Abort("Unknown file format.")
 
-		print("Format detected: " + parser.getName())
-
-	print("")
-
-	#begin playback
-	with parser.loadMovie(arguments.input) as movie:
-		if movie.rom: print("ROM:    " + movie.rom)
-		if movie.author: print("Author: " + movie.author)
-		if movie.description: print("Desc:   " + movie.description)
-		print("")
-		port.play(movie, progressBar)
-	print("\n")
+		print(" Success!")
+		print("Using format: " + parser.getName())
+		return parser
+	else:
+		raise Abort("File format must be specified.")
 
 def progressBar(movie, frame, inputs):
 	progress = frame / movie.frames
@@ -78,4 +98,10 @@ def progressBar(movie, frame, inputs):
 	print("\b" * len(line), end="")
 
 
-main(parser.parse_args())
+class Abort(Exception):
+	pass
+
+try:
+	main(parser.parse_args())
+except Abort as ex:
+	print("Error: " + str(ex))
