@@ -59,7 +59,7 @@ class Mupen64Reader:
 		self.author = readAt(self.__file, 0x0222, 222).decode().strip("\x00")
 		self.description = readAt(self.__file, 0x0300, 256).decode().strip("\x00")
 		self.controllers = readAt(self.__file, 0x15)[0]
-		self.frames = readAtInt(self.__file, 0x0C)
+		self.frames = readAtInt(self.__file, 0x18)
 		self.rerecords = readAtInt(self.__file, 0x10)
 		self.rom = readAt(self.__file, 0xC4, 32).decode().strip("\x00")
 		self.romcrc = readAtInt(self.__file, 0xE4)

@@ -66,6 +66,7 @@ def main(arguments):
 		if movie.description: print("Desc:   " + movie.description)
 		print("")
 		port.play(movie, progressBar)
+	print("\n")
 
 def progressBar(movie, frame, inputs):
 	progress = frame / movie.frames
