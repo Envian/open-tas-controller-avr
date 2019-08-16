@@ -17,9 +17,11 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from argparse import ArgumentParser, FileType
-from core.connection import TASController
 from io import BufferedReader
+import os
 
+from core.connection import TASController
+from core.cachedbuffer import CachedBuffer
 import formats.helpers
 
 parser = ArgumentParser(description="Can play TAS's or record inputs from an Open TAS Controller.")
@@ -34,7 +36,7 @@ playparser.add_argument("-f", "--format", action="store", help="Sets the format 
 
 def main(arguments):
 	port = connectToController(arguments.port, arguments.baud_rate, arguments.force)
-	input = arguments.input
+	input = arguments.input if arguments.input.seekable() else CachedBuffer(arguments.input)
 	format = getFormat(arguments.format, input)
 
 	if arguments.mode == "play":
