@@ -16,30 +16,34 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from argparse import ArgumentParser
+from argparse import ArgumentParser, FileType
 from core.connection import TASController
+from io import BufferedReader
+
 import formats.helpers
 
 parser = ArgumentParser(description="Can play TAS's or record inputs from an Open TAS Controller.")
 parser.add_argument("port", action="store", help="The port that the arduino is on")
-parser.add_argument("--force", action="store_true", help="Bypasses sanity checks and forces the movie to play or record from the given port")
-parser.add_argument("-i", "--input", action="store", help="The file to playback")
-parser.add_argument("-f", "--format", action="store", help="Sets the format for the input or output file")
 parser.add_argument("-b", "--baud-rate", action="store", default=250000, help="Sets the baud rate used in communication. Defaults to 250,000")
+parser.add_argument("--force", action="store_true", help="Bypasses sanity checks and forces the movie to play or record from the given port")
+subparsers = parser.add_subparsers(title="Mode", dest="mode")
+
+playparser = subparsers.add_parser("play", description="Plays a movie file through the Open TAS Controller.")
+playparser.add_argument("-i", "--input", action="store", type=FileType("rb"), default="-", help="The file to playback")
+playparser.add_argument("-f", "--format", action="store", help="Sets the format for the input or output file")
 
 def main(arguments):
 	port = connectToController(arguments.port, arguments.baud_rate, arguments.force)
-	input, output = getStreams(arguments.input, None)
+	input = arguments.input
 	format = getFormat(arguments.format, input)
 
-	if input:
-		with input:
-			movie = format.loadMovie(input)
-			print("Beginning playback\n")
-			if movie.rom: print("ROM:    " + movie.rom)
-			if movie.author: print("Author: " + movie.author)
-			if movie.description: print("Desc:   " + movie.description)
-			port.play(movie, progressBar)
+	if arguments.mode == "play":
+		movie = format.loadMovie(input)
+		print("Beginning playback\n")
+		if movie.rom: print("ROM:    " + movie.rom)
+		if movie.author: print("Author: " + movie.author)
+		if movie.description: print("Desc:   " + movie.description)
+		port.play(movie, progressBar)
 	else:
 		pass
 		#todo: recording
@@ -56,15 +60,8 @@ def connectToController(port, baudrate, force):
 			print("Warning: Connected device is not an OpenTAS Controller.")
 		else:
 			raise Abort("Connected device is not an OpenTAS Controller. Use --force to force playback.")
-			return
 
 	return controller
-
-def getStreams(input, output):
-	if input:
-		return (open(input, "rb"), None)
-	else:
-		return (None, open(output, "wb"))
 
 def getFormat(format, input):
 	if format:
