@@ -20,11 +20,19 @@
 #include "config.h"
 #include "n64.h"
 
-void runConsole(PlaybackMode mode) {
-	switch (mode) {
+void playConsole(Console console) {
+	switch (console) {
 #ifdef N64_SUPPORT
-	case N64_PLAY:   N64::playback(); break;
-	case N64_RECORD: N64::record(); break;
+	case CONSOLE_N64: N64::playback(); break;
+#endif
+	}
+}
+
+
+void recordConsole(Console console) {
+	switch (console) {
+#ifdef N64_SUPPORT
+	case CONSOLE_N64: N64::record(); break;
 #endif
 	}
 }

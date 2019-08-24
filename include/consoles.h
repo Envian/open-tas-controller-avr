@@ -20,17 +20,8 @@
 #include "config.h"
 
 enum Console : byte {
-	CONSOLE_N64 = 0
+	CONSOLE_N64 = 1 << 6
 };
 
-enum PlaybackMode : byte {
-	FLAG_PLAYBACK = 1 << 6,
-	FLAG_RECORD = 1 << 7,
-
-#ifdef N64_SUPPORT
-	N64_PLAY = CONSOLE_N64 | FLAG_PLAYBACK,
-	N64_RECORD = CONSOLE_N64 | FLAG_RECORD
-#endif
-};
-
-void runConsole(PlaybackMode console);
+void playConsole(Console console);
+void recordConsole(Console console);

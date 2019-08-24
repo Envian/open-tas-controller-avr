@@ -19,6 +19,7 @@
 #include "config.h"
 #include "pinregisters.h"
 
+#include "helpers.h"
 #include "oneline.h"
 #include "precision.h"
 #include "interrupts.h"
@@ -69,13 +70,11 @@ namespace N64 {
 	void playback() {
 		init();
 
-		while (!Serial.available());
-		const byte controllerCount = Serial.read();
+		const byte controllerCount = Helpers::readBlocking();
 
 		while (true) {
 			Serial.write(INPUT_PACKAGE_SIZE);
-			while (Serial.available() < INPUT_PACKAGE_SIZE);
-			Serial.readBytes(&inputs[0], INPUT_PACKAGE_SIZE);
+			Helpers::readBytesBlocking(inputs, INPUT_PACKAGE_SIZE);
 
 			if ((inputs[0] & inputs[1] & inputs[2] & inputs[3]) == 0xFF) {
 				return;
@@ -90,9 +89,7 @@ namespace N64 {
 	void record() {
 		init();
 
-		while (!Serial.available());
-		const byte controllerCount = Serial.read();
-
+		const byte controllerCount = Helpers::readBlocking();
 		byte buffer[4];
 
 		while (true) {

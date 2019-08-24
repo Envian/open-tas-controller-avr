@@ -14,13 +14,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from formats.helpers import readAt, readAtInt
+from formats.helpers import readAt, readAtInt, convertString, convertInt
 
 def getName():
 	return "Mupen64"
 
 def loadMovie(file):
 	return Mupen64Reader(file)
+
+def getWriter(file):
+	return Mupen64Writer(file)
 
 def isMovie(file):
 	#N.B: There's a few properties that we may want to consider that would make replays harder:
@@ -53,3 +56,45 @@ class Mupen64Reader:
 		inputs = self.__file.read(4)
 		self.eof = len(inputs) != 4
 		return inputs
+
+class Mupen64Writer:
+	def __init__(self, file, controllers=1, rom="Unknown ROM", author="Unknown Author", description="Recorded with Open TAS"):
+		self.__file = file
+		self.system = 0x40 # Nintendo 64
+		self.controllers = controllers
+		self.__frames = 0
+
+		file.write(b"M64\x1A") #Header
+		file.write(bytearray([3, 0, 0, 0])) #Version
+		file.write(bytearray([0, 0, 0, 0])) #uid
+		file.write(bytearray([0, 0, 0, 0])) #Frame Count (Includes lag frames)
+		file.write(bytearray([0, 0, 0, 0])) #Rerecord count
+		file.write(bytearray([30])) #fps
+		file.write(bytearray([controllers])) #controllers
+		file.write(bytearray([0, 0])) #reserved
+		file.write(bytearray([0, 0, 0, 0])) #input count (To be filled later)
+		file.write(bytearray([2, 0])) #Movie start type (Power On)
+		file.write(bytearray([0, 0])) #reserved
+		file.write(bytearray([(2 ** controllers) - 1, 0, 0, 0 ])) #controller flags
+		file.write(bytearray([0] * 160)) #reserved
+		file.write(convertString(rom, 32, nullTerminate=True, truncate=False)) #ROM Name
+		file.write(bytearray([0, 0, 0, 0])) #crc
+		file.write(bytearray([0, 0])) #country code
+		file.write(bytearray([0] * 56)) #reserved
+		file.write(bytearray([0] * 64)) #Video Plugin
+		file.write(bytearray([0] * 64)) #Sound Plugin
+		file.write(bytearray([0] * 64)) #Input Plugin
+		file.write(bytearray([0] * 64)) #RSP Plugin
+		file.write(convertString(author, 222, nullTerminate=True, truncate=False)) #Author
+		file.write(convertString(description, 256, nullTerminate=True, truncate=False)) #Description
+
+	def write(self, inputs):
+		self.__file.write(inputs)
+		self.__frames += 1
+
+	def close(self):
+		self.__file.seek(0x18)
+		#self.__file.write(convertInt(self.__frames, 4))
+		self.__file.write(bytearray([0xFF, 0xFF, 0xFF, 0xFF]))
+		self.__file.flush()
+		self.__file.close()

@@ -177,7 +177,7 @@ namespace OneLine {
 
 	void endRead(const byte mask) {
 		while ((CTRL_INPUT & mask) != mask);
-		while ((CTRL_INPUT & mask) == mask);
+		while ((CTRL_INPUT & mask) == mask); 
 		while ((CTRL_INPUT & mask) != mask);
 	}
 }

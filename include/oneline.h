@@ -17,10 +17,15 @@
 #pragma once
 #include <Arduino.h>
 
+#include "config.h"
+#include "pinregisters.h"
+
+#define CTRL_INPUT CONTROLLER_INPUT_AB
+
 namespace OneLine {
 	void init(const byte mask);
-	void writeBytes(const byte* data, byte count, const byte mask);
-	byte readByte(byte* const mask);
+	void writeBytes(const byte* data, byte count, const byte mask) ;
+	byte readByte(byte* const mask) ;
 	void readBytes(byte* dest, const int count, byte mask);
 	void endRead(const byte mask);
 }

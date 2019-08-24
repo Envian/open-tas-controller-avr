@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 # Open TAS - A Command line interface for the Open TAS Controller.
 # Copyright (C) 2019  Russell Small
@@ -32,23 +32,32 @@ subparsers = parser.add_subparsers(title="Mode", dest="mode")
 
 playparser = subparsers.add_parser("play", description="Plays a movie file through the Open TAS Controller.")
 playparser.add_argument("-i", "--input", action="store", type=FileType("rb"), default="-", help="The file to playback")
-playparser.add_argument("-f", "--format", action="store", help="Sets the format for the input or output file")
+playparser.add_argument("-f", "--format", action="store", help="Sets the format for the input file")
+
+recordparser = subparsers.add_parser("record", description="Records a movie from a connected controller & console.")
+recordparser.add_argument("-o", "--output", action="store", type=FileType("wb+"), required=True, help="An output file to save the recording to")
+recordparser.add_argument("-f", "--format", action="store", required=True, help="Sets the format for the output file")
+
 
 def main(arguments):
 	port = connectToController(arguments.port, arguments.baud_rate, arguments.force)
-	input = arguments.input if arguments.input.seekable() else CachedBuffer(arguments.input)
-	format = getFormat(arguments.format, input)
 
 	if arguments.mode == "play":
+		input = arguments.input if arguments.input.seekable() else CachedBuffer(arguments.input)
+		format = getFormat(arguments.format, input)
 		movie = format.loadMovie(input)
+
 		print("Beginning playback\n")
 		if movie.rom: print("ROM:    " + movie.rom)
 		if movie.author: print("Author: " + movie.author)
 		if movie.description: print("Desc:   " + movie.description)
+
 		port.play(movie, progressBar)
-	else:
-		pass
-		#todo: recording
+	elif arguments.mode == "record":
+		format = getFormat(arguments.format)
+		movie = format.getWriter(arguments.output)
+
+		port.record(movie, recordStatus)
 
 	print("\n")
 
@@ -65,11 +74,11 @@ def connectToController(port, baudrate, force):
 
 	return controller
 
-def getFormat(format, input):
+def getFormat(format, input=None):
 	if format:
 		parser = formats.helpers.getFormatByName(format)
 
-		if not parser.isMovie(input):
+		if input and not parser.isMovie(input):
 			raise Abort("Input file is not the correct format. Expected: " + parser.getName())
 
 		return parser
@@ -95,6 +104,19 @@ def progressBar(movie, frame, inputs):
 
 	print(line, end="", flush=True)
 	print("\b" * len(line), end="")
+
+def recordStatus(inputs):
+	inputs = ["A", "B", "Z", "S", "U", "D", "L", "R", "!", "!", "L", "R", "^", "v", "<", ">"].reverse()
+	data = inputs[0] * 256 + inputs[1]
+
+	for x in range(len(inputs)):
+		if not data & (2 ** x):
+			inputs[x] = " " * len(inputs[x])
+
+	text = "inputs: " + inputs.join(" ")
+
+	print(text, end=None, flush=True)
+	print("\b" * len(text), end=None, flush=False)
 
 
 class Abort(Exception):

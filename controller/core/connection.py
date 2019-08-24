@@ -41,5 +41,31 @@ class TASController:
 
 		self.__port.write([0xFF, 0xFF, 0xFF, 0xFF])
 
-	def record(self, movie):
-		pass
+	def record(self, movie, statusFunction=None):
+		self.__port.write(bytearray([0x0B])) # begin Recording
+		self.__port.write(bytearray([movie.system]))
+		self.__port.write(bytearray([movie.controllers]))
+
+		print("recording!")
+
+		try:
+			while True:
+				inputs = [0, 0, 0, 0]
+				inputs[0] = self.__port.read(1)[0]
+				print(hex(inputs[0])[2:], end="", flush=True)
+				inputs[1] = self.__port.read(1)[0]
+				print(hex(inputs[1])[2:], end="", flush=True)
+				inputs[2] = self.__port.read(1)[0]
+				print(hex(inputs[2])[2:], end="", flush=True)
+				inputs[3] = self.__port.read(1)[0]
+				print(hex(inputs[3])[2:], end="", flush=True)
+
+
+				#inputs = self.__port.read(4)
+				movie.write(bytearray(inputs))
+				if statusFunction:
+					statusFunction(inputs)
+		except KeyboardInterrupt:
+			pass
+
+		movie.close()

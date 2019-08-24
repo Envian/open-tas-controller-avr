@@ -51,3 +51,29 @@ def readAtInt(stream, position, size = 4, littleEndian = True):
 	for byte in raw:
 		value = value * 256 + byte
 	return value
+
+def convertString(string, size=None, truncate=True, nullTerminate=True):
+	realsize = len(string) + 1 if size == None else size
+	realsize = realsize - 1 if nullTerminate else realsize
+	result = string if len(string) <= realsize else string[:realsize]
+	result = result.encode()
+
+	if not truncate:
+		result = result.ljust(realsize, bytearray([0]))
+
+	if nullTerminate:
+		result += bytearray([0])
+
+	return result
+
+def convertInt(value, size=4, littleEndian=True):
+	data = b""
+
+	for x in range(size):
+		data += bytearray([data % 256])
+		data = data / 256
+
+	if not littleEndian:
+		data = data.reverse()
+
+	return data
