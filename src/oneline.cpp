@@ -151,7 +151,7 @@ namespace OneLine {
 			result <<= 1;
 
 			// Always ensure the ports start high so we only detect true falling edges.
-			while ((CTRL_INPUT & *mask) != *mask);
+			waitForHigh(*mask);
 
 			byte input;
 			do { input = CTRL_INPUT & *mask; }
@@ -168,16 +168,23 @@ namespace OneLine {
 		return result;
 	}
 
-	void readBytes(byte* dest, const int count, byte mask) {
-		for (byte n = 0; n < count; n++) {
-			*dest = readByte(&mask);
-			dest++;
+	static inline byte _readByte(const byte mask) {
+		byte result;
+		for (byte x = 0; x < 8; x++) {
+			result <<= 1;
+
+			waitForFalling(mask);
+			waitCycles(16);
+			result |= (CTRL_INPUT & mask) ? 1 : 0;
 		}
+
+		return result;
 	}
 
-	void endRead(const byte mask) {
-		while ((CTRL_INPUT & mask) != mask);
-		while ((CTRL_INPUT & mask) == mask); 
-		while ((CTRL_INPUT & mask) != mask);
+	void readBytes(byte* dest, const int count, const byte mask) {
+		for (byte n = 0; n < count; n++) {
+			*dest = _readByte(mask);
+			dest++;
+		}
 	}
 }

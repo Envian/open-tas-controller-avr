@@ -22,10 +22,13 @@
 
 #define CTRL_INPUT CONTROLLER_INPUT_AB
 
+#define waitForHigh(msk) while((CTRL_INPUT & msk) != msk);
+#define waitForLow(msk) while((CTRL_INPUT & msk) == msk);
+#define waitForFalling(msk) waitForHigh(msk) waitForLow(msk)
+
 namespace OneLine {
 	void init(const byte mask);
 	void writeBytes(const byte* data, byte count, const byte mask) ;
 	byte readByte(byte* const mask) ;
-	void readBytes(byte* dest, const int count, byte mask);
-	void endRead(const byte mask);
+	void readBytes(byte* dest, const int count, const byte mask);
 }

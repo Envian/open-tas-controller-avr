@@ -57,7 +57,8 @@ def main(arguments):
 		format = getFormat(arguments.format)
 		movie = format.getWriter(arguments.output)
 
-		port.record(movie, recordStatus)
+		port.record(movie)
+		#port.record(movie, recordStatus)
 
 	print("\n")
 
@@ -106,14 +107,14 @@ def progressBar(movie, frame, inputs):
 	print("\b" * len(line), end="")
 
 def recordStatus(inputs):
-	inputs = ["A", "B", "Z", "S", "U", "D", "L", "R", "!", "!", "L", "R", "^", "v", "<", ">"].reverse()
+	display = ["A", "B", "Z", "S", "U", "D", "L", "R", "!", "!", "L", "R", "^", "v", "<", ">"].reverse()
 	data = inputs[0] * 256 + inputs[1]
 
-	for x in range(len(inputs)):
+	for x in range(len(display)):
 		if not data & (2 ** x):
-			inputs[x] = " " * len(inputs[x])
+			display[x] = " " * len(inputs[x])
 
-	text = "inputs: " + inputs.join(" ")
+	text = "inputs: " + display.join(" ")
 
 	print(text, end=None, flush=True)
 	print("\b" * len(text), end=None, flush=False)

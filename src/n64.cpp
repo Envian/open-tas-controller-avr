@@ -49,11 +49,11 @@ namespace N64 {
 			switch (OneLine::readByte(&mask)) {
 			case 0x00: // Controller Status
 			case 0xFF: // Reset Controller
-				OneLine::endRead(mask);
+				waitForFalling(mask);
 				OneLine::writeBytes(controllerStatus, 3, mask);
 				break;
 			case 0x01: // Get Inputs
-				OneLine::endRead(mask);
+				waitForFalling(mask);
 				if (mask == controllerMask) {
 					OneLine::writeBytes(input, 4, mask);
 					return;
@@ -91,32 +91,33 @@ namespace N64 {
 
 		const byte controllerCount = Helpers::readBlocking();
 		byte buffer[4];
+		byte currentMask = CTRLMASK_1;
+
+		noInterrupts();
 
 		while (true) {
-			noInterrupts();
-			byte currentMask = CTRLMASK_1;
-			while (true) {
-				byte mask = currentMask;
-				switch (OneLine::readByte(&mask)) {
-				case 0x00: // Controller Status
-				case 0xFF: // Reset Controller
-					OneLine::endRead(mask);
-					OneLine::readBytes(buffer, 3, mask);
-					OneLine::endRead(mask);
-					break;
-				case 0x01: // Get Inputs
-					OneLine::endRead(mask);
-					OneLine::readBytes(buffer, 4, mask);
-					OneLine::endRead(mask);
-					Serial.write(buffer, 4);
-					break;
-				case 0x02: // Read from pack
-					break;
-				case 0x03: // Write to pack
-					break;
-				}
+			byte mask = currentMask;
+			switch (OneLine::readByte(&mask)) {
+			case 0x00: // Controller Status
+			case 0xFF: // Reset Controller
+				waitForFalling(mask);
+				OneLine::readBytes(buffer, 3, mask);
+				waitForFalling(mask);
+				break;
+			case 0x01: // Get Inputs
+				waitForFalling(mask);
+				OneLine::readBytes(buffer, 4, mask);
+				waitForFalling(mask);
+				Serial.write(buffer, 4);
+				break;
+			case 0x02: // Read from pack
+				OneLine::readBytes(buffer, 2, mask);
+				waitForFalling(mask);
+				break;
+			case 0x03: // Write to pack
+				waitForFalling(mask);
+				break;
 			}
-			interrupts();
 		}
 	}
 }
