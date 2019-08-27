@@ -35,6 +35,8 @@
 #define INPUT_PACKAGE_SIZE 4
 
 namespace N64 {
+	const byte zeros[33] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	byte buffer[4];
 	byte inputs[INPUT_PACKAGE_SIZE] = {0, 0, 0, 0};
 	const byte controllerStatus[] = { 0x05, 0x00, 0x00 };
 
@@ -60,6 +62,9 @@ namespace N64 {
 				}
 				break;
 			case 0x02: // Read from pack
+				OneLine::readBytes(buffer, 2, mask);
+				waitForFalling(mask);
+				OneLine::writeBytes(zeros, 16, mask);
 				break;
 			case 0x03: // Write to pack
 				break;
@@ -90,7 +95,6 @@ namespace N64 {
 		init();
 
 		const byte controllerCount = Helpers::readBlocking();
-		byte buffer[4];
 		byte currentMask = CTRLMASK_1;
 
 		noInterrupts();
@@ -100,9 +104,8 @@ namespace N64 {
 			switch (OneLine::readByte(&mask)) {
 			case 0x00: // Controller Status
 			case 0xFF: // Reset Controller
-				waitForFalling(mask);
-				OneLine::readBytes(buffer, 3, mask);
-				waitForFalling(mask);
+				// Discards 3 bytes plus the control bits
+				OneLine::discardBits(26, mask);
 				break;
 			case 0x01: // Get Inputs
 				waitForFalling(mask);
@@ -111,11 +114,12 @@ namespace N64 {
 				Serial.write(buffer, 4);
 				break;
 			case 0x02: // Read from pack
-				OneLine::readBytes(buffer, 2, mask);
-				waitForFalling(mask);
+				// Discards 2 additional address bytes, 33 data bytes, and 2 control bits
+				OneLine::discardBits(35 * 8 + 2, mask);
 				break;
 			case 0x03: // Write to pack
-				waitForFalling(mask);
+				// Discards 32 data bytes, 1 response byte, and 2 control bits
+				OneLine::discardBits(34 * 8 + 2, mask);
 				break;
 			}
 		}

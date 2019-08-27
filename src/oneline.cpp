@@ -181,10 +181,16 @@ namespace OneLine {
 		return result;
 	}
 
-	void readBytes(byte* dest, const int count, const byte mask) {
+	void readBytes(byte* dest, const byte count, const byte mask) {
 		for (byte n = 0; n < count; n++) {
 			*dest = _readByte(mask);
 			dest++;
+		}
+	}
+
+	void discardBits(const int bits, const byte mask) {
+		for (int x = 0; x < bits; x++) {
+			waitForFalling(mask);
 		}
 	}
 }

@@ -30,5 +30,6 @@ namespace OneLine {
 	void init(const byte mask);
 	void writeBytes(const byte* data, byte count, const byte mask) ;
 	byte readByte(byte* const mask) ;
-	void readBytes(byte* dest, const int count, const byte mask);
+	void readBytes(byte* dest, const byte count, const byte mask);
+	void discardBits(const int bits, const byte mask);
 }

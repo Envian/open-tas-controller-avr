@@ -52,13 +52,13 @@ class TASController:
 			while True:
 				inputs = [0, 0, 0, 0]
 				inputs[0] = self.__port.read(1)[0]
-				print(hex(inputs[0])[2:], end="", flush=True)
+				print(hex(inputs[0])[2:].rjust(2, "0"), end="", flush=True)
 				inputs[1] = self.__port.read(1)[0]
-				print(hex(inputs[1])[2:], end="", flush=True)
+				print(hex(inputs[1])[2:].rjust(2, "0"), end="", flush=True)
 				inputs[2] = self.__port.read(1)[0]
-				print(hex(inputs[2])[2:], end="", flush=True)
+				print(hex(inputs[2])[2:].rjust(2, "0"), end="", flush=True)
 				inputs[3] = self.__port.read(1)[0]
-				print(hex(inputs[3])[2:], end="", flush=True)
+				print(hex(inputs[3])[2:].rjust(2, "0"), end="", flush=True)
 
 
 				#inputs = self.__port.read(4)
