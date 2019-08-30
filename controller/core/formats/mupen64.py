@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from io import BytesIO
+from io import BytesIO, IOBase
 from core.formatting import *
 from core.movies import N64Movie
 
@@ -22,6 +22,9 @@ def getName():
 	return "Mupen64"
 
 def loadMovie(file):
+	if not isinstance(file, IOBase):
+		return None
+
 	data = Mupen64File()
 	data.load(file)
 	if data.header != b"M64\x1A":

@@ -19,6 +19,7 @@
 import glob
 import os
 import importlib
+import zipfile
 
 from serial import Serial
 
@@ -31,6 +32,8 @@ def connectToController(port, rate):
 
 def loadMovie(file, specifiedFormat):
 	formats = [specifiedFormat] if specifiedFormat else listFormats()
+	file = getMovieFile(file)
+
 	for name in formats:
 		format = getFormatByName(name)
 		movie = format.loadMovie(file)
@@ -38,6 +41,16 @@ def loadMovie(file, specifiedFormat):
 			return movie
 	return None
 
+def getMovieFile(file):
+	if zipfile.is_zipfile(file):
+		zip = zipfile.ZipFile(file)
+		if len(zip.namelist()) == 1:
+			return getMovieFile(zip.open(zip.namelist()[0], "r"))
+		else:
+			return zip
+	else:
+		file.seek(0)
+		return file
 
 def listFormats():
 	modules = [os.path.split(mod)[-1][:-3] for mod in glob.glob(os.path.join(os.path.dirname(__file__), "formats", "*.py"))]
