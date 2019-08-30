@@ -17,21 +17,18 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from argparse import ArgumentParser, FileType
-from io import BufferedReader
 import os
 
-from core.connection import TASController
-from core.cachedbuffer import CachedBuffer
-import formats.helpers
+from core.services import connectToController, loadMovie
+from core.output import printPlayProgress
 
 parser = ArgumentParser(description="Can play TAS's or record inputs from an Open TAS Controller.")
 parser.add_argument("port", action="store", help="The port that the arduino is on")
-parser.add_argument("-b", "--baud-rate", action="store", default=250000, help="Sets the baud rate used in communication. Defaults to 250,000")
-parser.add_argument("--force", action="store_true", help="Bypasses sanity checks and forces the movie to play or record from the given port")
-subparsers = parser.add_subparsers(title="Mode", dest="mode")
+parser.add_argument("-b", "--baud", action="store", default=250000, help="Sets the baud rate used in communication. Defaults to 250,000")
+subparsers = parser.add_subparsers(title="Mode", dest="mode", required=True)
 
 playparser = subparsers.add_parser("play", description="Plays a movie file through the Open TAS Controller.")
-playparser.add_argument("-i", "--input", action="store", type=FileType("rb"), default="-", help="The file to playback")
+playparser.add_argument("-i", "--input", action="store", type=FileType("rb"), required=True, help="The file to playback")
 playparser.add_argument("-f", "--format", action="store", help="Sets the format for the input file")
 
 recordparser = subparsers.add_parser("record", description="Records a movie from a connected controller & console.")
@@ -40,19 +37,16 @@ recordparser.add_argument("-f", "--format", action="store", required=True, help=
 
 
 def main(arguments):
-	port = connectToController(arguments.port, arguments.baud_rate, arguments.force)
+	print("Connecting to OpenTAS Controller on " + arguments.port + "... ", end="", flush=True)
+	controller, isOpenTAS = connectToController(arguments.port, arguments.baud)
+	if not isOpenTAS:
+		print("Failed!")
+		raise Abort("Connected device is not an OpenTAS controller.")
+	print("Success!")
+
 
 	if arguments.mode == "play":
-		input = arguments.input if arguments.input.seekable() else CachedBuffer(arguments.input)
-		format = getFormat(arguments.format, input)
-		movie = format.loadMovie(input)
-
-		print("Beginning playback\n")
-		if movie.rom: print("ROM:    " + movie.rom)
-		if movie.author: print("Author: " + movie.author)
-		if movie.description: print("Desc:   " + movie.description)
-
-		port.play(movie, progressBar)
+		play(controller, arguments)
 	elif arguments.mode == "record":
 		format = getFormat(arguments.format)
 		movie = format.getWriter(arguments.output)
@@ -62,63 +56,25 @@ def main(arguments):
 
 	print("\n")
 
-def connectToController(port, baudrate, force):
-	print("Connecting to OpenTAS Controller on: " + port)
-	controller = TASController(port, baudrate)
-	print("Connection successful.")
+def play(controller, arguments):
+	print("Loading Movie File... ", end="", flush=True)
+	movie = loadMovie(arguments.input, arguments.format)
 
-	if not controller.isOpenTAS:
-		if force:
-			print("Warning: Connected device is not an OpenTAS Controller.")
-		else:
-			raise Abort("Connected device is not an OpenTAS Controller. Use --force to force playback.")
+	if not movie:
+		print("Failed!")
+		raise Abort("Unable to load movie file - Unkown or incorrect file format.")
 
-	return controller
+	print("Complete.")
+	confirmConnection(movie)
+	movie.play(controller, printPlayProgress)
 
-def getFormat(format, input=None):
-	if format:
-		parser = formats.helpers.getFormatByName(format)
+def record(arguments):
+	pass
 
-		if input and not parser.isMovie(input):
-			raise Abort("Input file is not the correct format. Expected: " + parser.getName())
-
-		return parser
-	elif input:
-		print("Auto-detecting format...", end="", flush=True)
-		parser = formats.helpers.getFormatByFile(input)
-
-		if not parser:
-			print(" Failed!")
-			raise Abort("Unknown file format.")
-
-		print(" Success!")
-		print("Using format: " + parser.getName())
-		return parser
-	else:
-		raise Abort("File format must be specified.")
-
-def progressBar(movie, frame, inputs):
-	progress = frame / movie.frames
-	icon = ["|", "/", "-", "\\"][frame % 4]
-
-	line = "{0: >7}/{1} [{3: <50}] {2:.1%} {4}".format(frame, movie.frames, progress, "#" * int(progress * 50), icon)
-
-	print(line, end="", flush=True)
-	print("\b" * len(line), end="")
-
-def recordStatus(inputs):
-	display = ["A", "B", "Z", "S", "U", "D", "L", "R", "!", "!", "L", "R", "^", "v", "<", ">"].reverse()
-	data = inputs[0] * 256 + inputs[1]
-
-	for x in range(len(display)):
-		if not data & (2 ** x):
-			display[x] = " " * len(inputs[x])
-
-	text = "inputs: " + display.join(" ")
-
-	print(text, end=None, flush=True)
-	print("\b" * len(text), end=None, flush=False)
-
+def confirmConnection(movie):
+	print("")
+	movie.print()
+	print("")
 
 class Abort(Exception):
 	pass

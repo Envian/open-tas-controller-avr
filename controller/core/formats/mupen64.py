@@ -14,48 +14,63 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from formats.helpers import readAt, readAtInt, convertString, convertInt
+from io import BytesIO
+from core.formatting import *
+from core.movies import N64Movie
 
 def getName():
 	return "Mupen64"
 
 def loadMovie(file):
-	return Mupen64Reader(file)
+	data = Mupen64File()
+	data.load(file)
+	if data.header != b"M64\x1A":
+		return None
 
-def getWriter(file):
-	return Mupen64Writer(file)
+	movie = N64Movie(data.rom, data.controllers, data.author, data.description)
+	inputStream = BytesIO(data.inputData)
+	for x in range(data.frames):
+		movie.write([inputStream.read(4)])
+	return movie
 
-def isMovie(file):
-	#N.B: There's a few properties that we may want to consider that would make replays harder:
-	#   Version (0x04) - Only 3 is supported now.
-	#   Movie Type (0x1C) - Should be 2 (From power on), not 1 (From snapshot)
-	#   Controller Flags (0x20) - Does not currently support perriphreals
-	return readAt(file, 0, 4) == b"M64\x1A"
+def saveMovie(file):
+	pass
 
-class Mupen64Reader:
-	def __init__(self, file):
-		self.__file = file
-		self.eof = None
+class Mupen64File:
+	def __init__(self):
+		pass
 
-		self.system = 0x40 # Nintendo 64
-		self.author = readAt(file, 0x0222, 222).decode().strip("\x00")
-		self.description = readAt(file, 0x0300, 256).decode().strip("\x00")
-		self.controllers = readAt(file, 0x15)[0]
-		self.frames = readAtInt(file, 0x18)
-		self.rerecords = readAtInt(file, 0x10)
-		self.rom = readAt(file, 0xC4, 32).decode().strip("\x00")
-		self.romcrc = readAtInt(file, 0xE4)
-		self.countrycode = readAtInt(file, 0xE8, size=2)
+	def load(self, file):
+		file.seek(0)
 
-		file.seek(0x400)
+		self.header = file.read(4)
+		if self.header != b"M64\x1A":
+			return
 
-	def getInputs_player1(self):
-		return self.__getInputs()
+		self.version = readInt(file, 4)
+		self.uid = readInt(file, 4)
+		self.realframes = readInt(file, 4)
+		self.rerecords = readInt(file, 4)
+		self.fps = readInt(file, 1)
+		self.controllers = readInt(file, 1)
+		self._reserved1 = file.read(2)
+		self.frames = readInt(file, 4)
+		self.startType = file.read(2)
+		self._reserved2 = file.read(2)
+		self.controllerFlags = readInt(file, 4)
+		self._reserved3 = file.read(160)
+		self.rom = readString(file, 32)
+		self.crc = readInt(file, 4)
+		self.countryCode = readInt(file, 2)
+		self._reserved4 = file.read(56)
+		self.videoPlugin = readString(file, 64)
+		self.soundPlugin = readString(file, 64)
+		self.inputPlugin = readString(file, 64)
+		self.rspPlugin = readString(file, 64)
+		self.author = readString(file, 222)
+		self.description = readString(file, 256)
+		self.inputData = file.read()
 
-	def __getInputs(self):
-		inputs = self.__file.read(4)
-		self.eof = len(inputs) != 4
-		return inputs
 
 class Mupen64Writer:
 	def __init__(self, file, controllers=1, rom="Unknown ROM", author="Unknown Author", description="Recorded with Open TAS"):

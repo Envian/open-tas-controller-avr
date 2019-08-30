@@ -14,45 +14,24 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import os
-import glob
-import importlib
-
-def listFormats():
-	modules = [os.path.split(mod)[-1][:-3] for mod in glob.glob(os.path.join(os.path.dirname(__file__), "*.py"))]
-	modules.remove("__init__")
-	modules.remove(__name__.split(".")[-1])
-	return modules
-
-def getFormatByFile(file):
-	for format in listFormats():
-		targetModule = getFormatByName(format)
-		if targetModule.isMovie(file):
-			return targetModule
-	return None
-
-
-def getFormatByName(name):
-	try:
-		targetModule = importlib.import_module("formats." + name)
-		return targetModule
-	except ImportError:
-		raise Exception("Format unsupported. Unable to find format file: " + name + ".py")
-
-def readAt(stream, position, count = 1):
-	stream.seek(position)
-	return stream.read(count)
-
-def readAtInt(stream, position, size = 4, littleEndian = True):
-	raw = readAt(stream, position, 4)
+def readInt(stream, size, littleEndian=True):
+	raw = stream.read(size)
 	if littleEndian: raw = raw[::-1]
-
 	value = 0
 	for byte in raw:
 		value = value * 256 + byte
 	return value
 
-def convertString(string, size=None, truncate=True, nullTerminate=True):
+def readString(stream, length=None, fixed=True):
+	if fixed:
+		return stream.read(length).strip(b"\x00").decode()
+
+	raw = stream.read(1)
+	while raw[-1] != "\x00" and len(raw) < length:
+		raw += stream.read(1)
+	return raw.decode()
+
+def writeString(stream, string, size=None, truncate=True, nullTerminate=True):
 	realsize = len(string) + 1 if size == None else size
 	realsize = realsize - 1 if nullTerminate else realsize
 	result = string if len(string) <= realsize else string[:realsize]
@@ -64,9 +43,9 @@ def convertString(string, size=None, truncate=True, nullTerminate=True):
 	if nullTerminate:
 		result += bytearray([0])
 
-	return result
+	return stream.write(result)
 
-def convertInt(value, size=4, littleEndian=True):
+def writeInt(stream, value, size=4, littleEndian=True):
 	data = b""
 
 	for x in range(size):
@@ -76,4 +55,4 @@ def convertInt(value, size=4, littleEndian=True):
 	if not littleEndian:
 		data = data.reverse()
 
-	return data
+	return stream.write(data)
