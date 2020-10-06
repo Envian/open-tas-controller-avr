@@ -23,5 +23,5 @@ enum Console : byte {
 	CONSOLE_N64 = 1 << 6
 };
 
-void playConsole(Console console);
-void recordConsole(Console console);
+void streamToConsole(Console console);
+void streamToPC(Console console);

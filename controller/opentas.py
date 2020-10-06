@@ -19,8 +19,10 @@
 from argparse import ArgumentParser, FileType
 import os
 
-from core.services import connectToController, loadMovie
+from core.services import connectToController, loadMovie, getFormatByName
 from core.output import printPlayProgress
+
+import core.movies
 
 parser = ArgumentParser(description="Can play TAS's or record inputs from an Open TAS Controller.")
 parser.add_argument("port", action="store", help="The port that the arduino is on")
@@ -48,11 +50,7 @@ def main(arguments):
 	if arguments.mode == "play":
 		play(controller, arguments)
 	elif arguments.mode == "record":
-		format = getFormat(arguments.format)
-		movie = format.getWriter(arguments.output)
-
-		port.record(movie)
-		#port.record(movie, recordStatus)
+		record(controller, arguments)
 
 	print("\n")
 
@@ -68,8 +66,13 @@ def play(controller, arguments):
 	confirmConnection(movie)
 	movie.play(controller, printPlayProgress)
 
-def record(arguments):
-	pass
+def record(controller, arguments):
+	print("Preparing to record movie... ", end="", flush=True)
+	movie = core.movies.N64Movie("test", 1, "test", "test")
+	movie.record(controller, debugPrint)
+
+	print("\n\n\n")
+
 
 def confirmConnection(movie):
 	print("")
@@ -78,6 +81,9 @@ def confirmConnection(movie):
 
 class Abort(Exception):
 	pass
+
+def debugPrint(movie, frames, inputs):
+	print(frames, end="", flush=True)
 
 try:
 	main(parser.parse_args())

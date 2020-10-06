@@ -99,6 +99,8 @@ namespace N64 {
 
 		noInterrupts();
 
+		DDRB = 0xFF;
+
 		while (true) {
 			byte mask = currentMask;
 			switch (OneLine::readByte(&mask)) {

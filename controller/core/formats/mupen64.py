@@ -95,7 +95,7 @@ class Mupen64Writer:
 		file.write(bytearray([0, 0])) #reserved
 		file.write(bytearray([(2 ** controllers) - 1, 0, 0, 0 ])) #controller flags
 		file.write(bytearray([0] * 160)) #reserved
-		file.write(convertString(rom, 32, nullTerminate=True, truncate=False)) #ROM Name
+		file.write(formatString(rom, 32, nullTerminate=True, truncate=False)) #ROM Name
 		file.write(bytearray([0, 0, 0, 0])) #crc
 		file.write(bytearray([0, 0])) #country code
 		file.write(bytearray([0] * 56)) #reserved
@@ -103,8 +103,8 @@ class Mupen64Writer:
 		file.write(bytearray([0] * 64)) #Sound Plugin
 		file.write(bytearray([0] * 64)) #Input Plugin
 		file.write(bytearray([0] * 64)) #RSP Plugin
-		file.write(convertString(author, 222, nullTerminate=True, truncate=False)) #Author
-		file.write(convertString(description, 256, nullTerminate=True, truncate=False)) #Description
+		file.write(formatString(author, 222, nullTerminate=True, truncate=False)) #Author
+		file.write(formatString(description, 256, nullTerminate=True, truncate=False)) #Description
 
 	def write(self, inputs):
 		self.__file.write(inputs)

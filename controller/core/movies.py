@@ -75,7 +75,6 @@ class N64Movie(Movie):
 		except KeyboardInterrupt:
 			pass
 
-		movie.close()
 
 	def write(self, raw, **kargs):
 		for x in range(self.controllers):

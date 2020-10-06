@@ -28,10 +28,10 @@ void setup() {
 void loop() {
 	switch (Serial.read()) {
 	case 0xA: // Begin Playback
-		playConsole((Console)Helpers::readBlocking());
+		streamToConsole((Console)Helpers::readBlocking());
 		break;
 	case 0xB: // Begin Recording
-		recordConsole((Console)Helpers::readBlocking());
+		streamToPC((Console)Helpers::readBlocking());
 		break;
 	case 'd': // Describe
 		Serial.write("Open TAS Controller\n");

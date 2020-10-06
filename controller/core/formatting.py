@@ -31,7 +31,7 @@ def readString(stream, length=None, fixed=True):
 		raw += stream.read(1)
 	return raw.decode()
 
-def writeString(stream, string, size=None, truncate=True, nullTerminate=True):
+def formatString(string, size=None, truncate=True, nullTerminate=True):
 	realsize = len(string) + 1 if size == None else size
 	realsize = realsize - 1 if nullTerminate else realsize
 	result = string if len(string) <= realsize else string[:realsize]
@@ -43,7 +43,7 @@ def writeString(stream, string, size=None, truncate=True, nullTerminate=True):
 	if nullTerminate:
 		result += bytearray([0])
 
-	return stream.write(result)
+	return result
 
 def writeInt(stream, value, size=4, littleEndian=True):
 	data = b""

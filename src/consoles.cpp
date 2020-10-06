@@ -20,7 +20,7 @@
 #include "config.h"
 #include "n64.h"
 
-void playConsole(Console console) {
+void streamToConsole(Console console) {
 	switch (console) {
 #ifdef N64_SUPPORT
 	case CONSOLE_N64: N64::playback(); break;
@@ -29,7 +29,7 @@ void playConsole(Console console) {
 }
 
 
-void recordConsole(Console console) {
+void streamToPC(Console console) {
 	switch (console) {
 #ifdef N64_SUPPORT
 	case CONSOLE_N64: N64::record(); break;
