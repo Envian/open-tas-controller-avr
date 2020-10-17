@@ -18,15 +18,15 @@
 #include <Arduino.h>
 
 #define waitCycles(cycles) switch(cycles % 3) { \
-case 2: asm volatile("\tNOP\n"); \
-case 1: asm volatile("\tNOP\n"); \
+case 2: asm volatile("NOP\n"); \
+case 1: asm volatile("NOP\n"); \
 default: { \
-	register byte __scratch; \
+	volatile register byte __scratch; \
 	asm volatile( \
-		"\tLDI %0, %1\n" \
+		"LDI %0, %1\n" \
 		"WAIT_CYCLES_LOOP%=:\n" \
-		"\tDEC %0\n" \
-		"\tBRNE WAIT_CYCLES_LOOP%=\n" \
+		"DEC %0\n" \
+		"BRNE WAIT_CYCLES_LOOP%=\n" \
 		: "=r" (__scratch) \
 		: "i" (cycles / 3) \
 		: "cc" \

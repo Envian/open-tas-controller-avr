@@ -28,6 +28,6 @@
 #define _pinToPort(p) (((p) <= 7) ? PD : (((p) <= 13) ? PB : (((p) <= 21) ? PC : NOT_A_PORT)))
 #define _pinToBitMask(p) (((p) <= 13) ? (1 << ((p) % 8)) : (1 << ((p) - 14)))
 
-#define _portModeRegister(p) (((p) == PB) ? (&DDRB) : (((p) == PC) ? (&DDRC) : (((p) == PD) ? (&DDRD) : (NOT_A_PORT))))
-#define _portInputRegister(p) (((p) == PB) ? (&PINB) : (((p) == PC) ? (&PINC) : (((p) == PD) ? (&PIND) : (NOT_A_PORT))))
-#define _portOutputRegister(p) (((p) == PB) ? (&PORTB) : (((p) == PC) ? (&PORTC) : (((p) == PD) ? (&PORTD) : (NOT_A_PORT))))
+#define _portModeRegister(p) (*(((p) == PB) ? (&DDRB) : (((p) == PC) ? (&DDRC) : (((p) == PD) ? (&DDRD) : (NOT_A_PORT)))))
+#define _portInputRegister(p) (*(((p) == PB) ? (&PINB) : (((p) == PC) ? (&PINC) : (((p) == PD) ? (&PIND) : (NOT_A_PORT)))))
+#define _portOutputRegister(p) (*(((p) == PB) ? (&PORTB) : (((p) == PC) ? (&PORTC) : (((p) == PD) ? (&PORTD) : (NOT_A_PORT)))))

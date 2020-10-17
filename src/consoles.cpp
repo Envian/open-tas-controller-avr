@@ -19,20 +19,23 @@
 
 #include "config.h"
 #include "n64.h"
+#include "helpers.h"
 
-void streamToConsole(Console console) {
-	switch (console) {
+void playback() {
+	switch ((Console)Helpers::readBlocking()) {
 #ifdef N64_SUPPORT
 	case CONSOLE_N64: N64::playback(); break;
 #endif
+	default: Serial.write(0xFF);
 	}
 }
 
 
-void streamToPC(Console console) {
-	switch (console) {
+void record() {
+	switch ((Console)Helpers::readBlocking()) {
 #ifdef N64_SUPPORT
 	case CONSOLE_N64: N64::record(); break;
 #endif
+	default: Serial.write(0xFF);
 	}
 }

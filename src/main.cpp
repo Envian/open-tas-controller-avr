@@ -20,6 +20,9 @@
 #include "consoles.h"
 #include "helpers.h"
 
+
+#include "precision.h"
+
 void setup() {
 	Serial.begin(SERIAL_BAUD);
 	Serial.write("OpenTAS");
@@ -27,16 +30,20 @@ void setup() {
 
 void loop() {
 	switch (Serial.read()) {
-	case 0xA: // Begin Playback
-		streamToConsole((Console)Helpers::readBlocking());
+	case 0xA:
+	// Begin Playback
+		playback();
 		break;
-	case 0xB: // Begin Recording
-		streamToPC((Console)Helpers::readBlocking());
+	// Begin Recording
+	case 0xB:
+		record();
 		break;
-	case 'd': // Describe
+	// Describe
+	case 'd':
 		Serial.write("Open TAS Controller\n");
 		break;
-	case 'v': // Version
+	// Version
+	case 'v':
 		Serial.write(STR(VERSION) "\n");
 		break;
 	}

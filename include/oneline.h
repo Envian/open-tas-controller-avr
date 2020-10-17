@@ -18,18 +18,13 @@
 #include <Arduino.h>
 
 #include "config.h"
-#include "pinregisters.h"
-
-#define CTRL_INPUT CONTROLLER_INPUT_AB
-
-#define waitForHigh(msk) while((CTRL_INPUT & msk) != msk);
-#define waitForLow(msk) while((CTRL_INPUT & msk) == msk);
-#define waitForFalling(msk) waitForHigh(msk) waitForLow(msk)
+#include "hardware.h"
 
 namespace OneLine {
-	void init(const byte mask);
-	void writeBytes(const byte* data, byte count, const byte mask) ;
-	byte readByte(byte* const mask) ;
-	void readBytes(byte* dest, const byte count, const byte mask);
-	void discardBits(const int bits, const byte mask);
+	byte init(const byte mask);
+	byte readCommand();
+	int getReadWriteAddress();
+	byte getLastController();
+	void reply(const byte* data, register byte count);
+	void readBytes(const byte* buffer, byte max);
 }

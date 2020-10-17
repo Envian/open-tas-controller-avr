@@ -48,7 +48,8 @@ class N64Movie(Movie):
 	def play(self, connection, statusFunction = None):
 		connection.write(bytearray([0x0A])) # begin playback
 		connection.write(bytearray([0x40])) # Nintendo 64
-		connection.write(bytearray([self.controllers]))
+		#connection.write(bytearray([self.controllers]))
+		connection.write(bytearray([0x01])) # Temp - One controller
 
 		for frame in range(self.frames):
 			size = connection.read(1)[0]
@@ -71,6 +72,7 @@ class N64Movie(Movie):
 				inputs = [connection.read(4) for x in range(self.controllers)]
 				self.write(b"".join(inputs))
 				statusFunction(self, frame, inputs) if statusFunction else None
+
 
 		except KeyboardInterrupt:
 			pass

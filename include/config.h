@@ -16,47 +16,33 @@
 
 #pragma once
 
-#include "pinregisters.h"
+#include "hardware.h"
+#define __STR(val) #val
+#define STR(val) __STR(val)
 
 /*******************************************************************************
 *                                   General                                    *
 *******************************************************************************/
 #define SERIAL_BAUD 250000
-#define PIN_LED 13
 
 /*******************************************************************************
-*                                   Features                                   *
+*                                 Nintendo 64                                  *
 *******************************************************************************/
 
-// Controller count isn't used by the TAS Chip, but will be sent to the
-// controlling software.
-#define CONTROLLERS_5V 1
-#define CONTROLLERS_3V3 1
-
-// Defines supported consoles.
+// Communication is done through a single wire per controller, pulled up to 3v3.
+// Protection Circuitry is recommended, but not strictly necessary.
 #define N64_SUPPORT
 
-// Set to true if the N64/GCN has protection circuitry
-#define ONELINE_PROTECTED true
 
-/*******************************************************************************
-*                                     Pins                                     *
-*******************************************************************************/
-// Console Pins. Pins A and B must be on the same port. Pin C will be on another.
-#define CONTROLLER1A PIN_A0
-#define CONTROLLER1B PIN_A1
-#define CONTROLLER2A PIN_A2
-#define CONTROLLER2B PIN_A3
-#define CONTROLLER3A PIN_A4
-#define CONTROLLER3B PIN_A5
-#define CONTROLLER4A PIN_A6
-#define CONTROLLER4B PIN_A7
+#ifdef N64_SUPPORT
 
-// Pin C for each controller is on a different pin set than A and B
-#define CONTROLLER1C 8
-#define CONTROLLER2C 9
-#define CONTROLLER3C 10
-#define CONTROLLER4C 11
+// Controller Pins for both N64 and GCN (Must be same register)
+#define PIN_ONELINE_CTRL_1 PIN_A0
+#define PIN_ONELINE_CTRL_2 PIN_A1
+#define PIN_ONELINE_CTRL_3 PIN_A2
+#define PIN_ONELINE_CTRL_4 PIN_A3
+
+#endif // N64_SUPPORT
 
 /*******************************************************************************
 *                                 Misc Values                                  *
@@ -65,14 +51,15 @@
 #define VERSION 0
 
 /*******************************************************************************
-*                        Common Values & Sanity Checks                         *
+*                        Validation & Calculated Values                        *
 *******************************************************************************/
 
-#define __STR(val) #val
-#define STR(val) __STR(val)
+#ifdef N64_SUPPORT
 
-// Don't modify any of these
-#define CONTROLLER_PORT_AB (_pinToPort(CONTROLLER1A))
-#define CONTROLLER_INPUT_AB (*_portInputRegister(CONTROLLER_PORT_AB))
-#define CONTROLLER_OUTPUT_AB (*_portOutputRegister(CONTROLLER_PORT_AB))
-#define CONTROLLER_DIR_AB (*_portModeRegister(CONTROLLER_PORT_AB))
+#if _pinToPort(PIN_ONELINE_CTRL_1) != _pinToPort(PIN_ONELINE_CTRL_2) || \
+	_pinToPort(PIN_ONELINE_CTRL_1) != _pinToPort(PIN_ONELINE_CTRL_3) || \
+	_pinToPort(PIN_ONELINE_CTRL_1) != _pinToPort(PIN_ONELINE_CTRL_4)
+#error N64 & GCN require all controller pins to be on the same register.
+#endif
+
+#endif
