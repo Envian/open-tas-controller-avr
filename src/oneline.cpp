@@ -109,6 +109,8 @@ namespace OneLine {
 
 		// Note: Takes about 30 cycles to get here from readCommand.
 		register byte __scratch1, __scratch2, __scratch3;
+
+#pragma GCC diagnostic ignored "-Wuninitialized"
 		asm volatile (
 			"rjmp writeloop%= \n" \
 
@@ -199,7 +201,6 @@ namespace OneLine {
 			// outputs (None are real)
 			: [counter] "+r" (count), [bitmask] "+r" (__scratch1), [currentByte] "+r" (__scratch2),
 			[pointer] "+x" (data), [scratch] "+r" (__scratch3)
-
 			// inputs
 			: "[counter]" (count), "[pointer]" (data), [zero] "r" (0),
 			[lowMask] "r" (replyMask), [portNumber] "i" (PORT_NUMBER)
@@ -207,10 +208,12 @@ namespace OneLine {
 			// Clobbers
 			: "cc"
 		);
+#pragma GCC diagnostic pop
 	}
 
 	int getReadWriteAddress() {
 		// TODO: Not Implemented
+		return 0;
 	}
 
 	void readBytes(const byte* buffer, byte max) {
