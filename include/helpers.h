@@ -17,8 +17,6 @@
 #pragma once
 #include <Arduino.h>
 
-namespace Helpers {
-	byte readBlocking();
-	void readBytesBlocking(char* buffer, size_t length);
-	void readBytesBlocking(uint8_t* buffer, size_t length);
-}
+byte readBlocking();
+void readBytesBlocking(char* buffer, size_t length);
+void readBytesBlocking(uint8_t* buffer, size_t length);

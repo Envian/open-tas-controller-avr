@@ -24,8 +24,9 @@ import zipfile
 from serial import Serial
 
 def connectToController(port, rate):
-	controller = Serial(port, rate, timeout=5)
-	isOpenTAS = controller.read(7) == b"OpenTAS"
+	controller = Serial(port, rate, timeout=10)
+	preamble = controller.read_until(bytes([0]))
+	isOpenTAS = preamble.startswith(b"\nOpenTAS")
 	controller.timeout = None
 
 	return (controller, isOpenTAS)

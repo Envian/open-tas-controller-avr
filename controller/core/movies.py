@@ -46,21 +46,21 @@ class N64Movie(Movie):
 		self.inputs = ([],) * controllers
 
 	def play(self, connection, statusFunction = None):
-		connection.write(bytearray([0x0A])) # begin playback
+		connection.write(bytearray([0x80])) # begin playback
 		connection.write(bytearray([0x40])) # Nintendo 64
 		#connection.write(bytearray([self.controllers]))
-		connection.write(bytearray([0x01])) # Temp - One controller
+		connection.write(bytearray([0x0D])) # Temp - size of the bytes
+		connection.write(bytearray([0x04])) # Temp - One Controller Packet
+		connection.write(bytearray([0x05, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]))
 
 		for frame in range(self.frames):
-			size = connection.read(1)[0]
-			if size == 0xFF: break
 
 			#Size is equal to the number of bytes the chip is expecting back.
 			#currently not considered.
 			inputs = [input[frame] for input in self.inputs]
-			connection.write(b"".join(inputs))
-
+			connection.write(bytearray([0x8A]) + b"".join(inputs))
 			statusFunction(self, frame, inputs) if statusFunction else None
+			connection.read(1)
 
 	def record(self, connection, statusFunction = None):
 		connection.write(bytearray([0x0B])) # begin Recording

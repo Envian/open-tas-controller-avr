@@ -32,3 +32,7 @@ default: { \
 		: "cc" \
 	); \
 }}
+
+
+void enablePrecisionMode();
+void disablePrecisionMode();

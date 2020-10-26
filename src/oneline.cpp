@@ -20,7 +20,6 @@
 #include "config.h"
 #include "hardware.h"
 #include "precision.h"
-#include "interrupts.h"
 
 #define CTRL_PORT _pinToPort(PIN_ONELINE_CTRL_2)
 #define CTRL_DIR _portModeRegister(CTRL_PORT)
@@ -51,8 +50,8 @@ namespace OneLine {
 	byte controllerMask;
 	byte lastInputMask;
 
-	byte init(const byte mask) {
-		Interrupts::disableRegisters();
+	void init(const byte mask) {
+		//Interrupts::disableRegisters();
 		controllerMask = 0;
 		controllerMask |= (mask & 0x08) ? CTRLMASK_4 : 0;
 		controllerMask |= (mask & 0x04) ? CTRLMASK_3 : 0;
@@ -61,13 +60,7 @@ namespace OneLine {
 
 		CTRL_DIR = 0x00; // All Pins to Input
 		CTRL_OUTPUT = 0x00; // Force all inputs low
-
-		byte controllerCount = 0;
-		for (byte bit = 0; bit < 8; bit++) {
-			controllerCount += (mask & (1 << bit)) ? 1 : 0;
-		}
-
-		return controllerCount;
+		pinMode(2, INPUT_PULLUP);
 	}
 
 	byte readCommand() {
@@ -87,6 +80,7 @@ namespace OneLine {
 
 			result |= (CTRL_INPUT & controllerMask) ? 1 : 0;
 		}
+		//BREAKPOINT();
 		return result;
 	}
 

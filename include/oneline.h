@@ -21,7 +21,7 @@
 #include "hardware.h"
 
 namespace OneLine {
-	byte init(const byte mask);
+	void init(const byte mask);
 	byte readCommand();
 	int getReadWriteAddress();
 	byte getLastController();

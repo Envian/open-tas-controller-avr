@@ -17,19 +17,17 @@
 #include <Arduino.h>
 #include "helpers.h"
 
-namespace Helpers {
-	byte readBlocking() {
-		while (!Serial.available());
-		return (byte)Serial.read();
-	}
+byte readBlocking() {
+	while (!Serial.available());
+	return (byte)Serial.read();
+}
 
-	void readBytesBlocking(char* buffer, size_t length) {
-		while ((size_t)Serial.available() < length);
-		Serial.readBytes(buffer, length);
-	}
+void readBytesBlocking(char* buffer, size_t length) {
+	while ((size_t)Serial.available() < length);
+	Serial.readBytes(buffer, length);
+}
 
-	void readBytesBlocking(uint8_t* buffer, size_t length) {
-		while ((size_t)Serial.available() < length);
-		Serial.readBytes(buffer, length);
-	}
+void readBytesBlocking(uint8_t* buffer, size_t length) {
+	while ((size_t)Serial.available() < length);
+	Serial.readBytes(buffer, length);
 }

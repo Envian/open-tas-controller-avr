@@ -18,6 +18,5 @@
 #include <Arduino.h>
 
 namespace N64 {
-	void playback();
-	void record();
+	void connect();
 }

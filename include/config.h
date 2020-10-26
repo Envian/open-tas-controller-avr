@@ -63,3 +63,6 @@
 #endif
 
 #endif
+
+// Ensures strings are loaded for most files.
+#include "strings.h"

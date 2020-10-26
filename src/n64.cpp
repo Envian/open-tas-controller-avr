@@ -16,13 +16,14 @@
 
 #include <Arduino.h>
 #include "n64.h"
+
 #include "config.h"
 #include "hardware.h"
-
+#include "commands.h"
 #include "helpers.h"
-#include "oneline.h"
 #include "precision.h"
-#include "interrupts.h"
+
+#include "oneline.h"
 
 // N64 uses pin A on each controller, and nothing else.
 #define CTRLMASK_1 (_pinToBitMask(PIN_ONELINE_CTRL_1))
@@ -39,49 +40,87 @@ namespace N64 {
 	byte ZERO_PACKET[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 	byte inputBuffer[INPUT_PACKAGE_SIZE * MAX_CONTROLLERS] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 	byte statusBuffer[STATUS_SIZE * MAX_CONTROLLERS] = { 0x05, 0x00, 0x00, 0x05, 0x00, 0x00, 0x05, 0x00, 0x00, 0x05, 0x00, 0x00 };
+	byte controllerCount;
+	byte packetSize;
 
-	void playback() {
-		// bit 3 = controller 4, bit 2 = controller 3, etc.
-		const byte controllerFlags = Helpers::readBlocking();
-		const byte controllerCount = OneLine::init(controllerFlags);
-		byte controllersUpdated;
+	void sendPacket() {
+		byte controllersUpdated = 0;
+		readBytesBlocking(inputBuffer, packetSize);
 
-		while (true) {
-			controllersUpdated = 0;
-
-			// Update the input package.
-			Serial.write(controllerCount * INPUT_PACKAGE_SIZE);
-			for (byte controller = 0; controller < MAX_CONTROLLERS; controller++) {
-				if (controllerFlags & (1 << controller)) {
-					Helpers::readBytesBlocking(inputBuffer + INPUT_PACKAGE_SIZE * controller, INPUT_PACKAGE_SIZE);
-				}
+		noInterrupts();
+		// Send inputs
+		do {
+			switch (OneLine::readCommand()) {
+			case 0x00: // Controller Status
+			case 0xFF: // Reset Controller
+				OneLine::reply(statusBuffer + OneLine::getLastController() * STATUS_SIZE, STATUS_SIZE);
+				break;
+			case 0x01: // Get Inputs
+				OneLine::reply(inputBuffer + OneLine::getLastController() * INPUT_PACKAGE_SIZE, INPUT_PACKAGE_SIZE);
+				controllersUpdated++;
+				break;
+			case 0x02: // Read from pack
+				// Ignore the next 2 bytes.
+				OneLine::readCommand();
+				OneLine::readCommand();
+				OneLine::reply(ZERO_PACKET, 16);
+				break;
+			case 0x03: // Write to pack
+				break;
 			}
-
-			noInterrupts();
-			// Send inputs
-			do {
-				switch (OneLine::readCommand()) {
-				case 0x00: // Controller Status
-				case 0xFF: // Reset Controller
-					OneLine::reply(statusBuffer + OneLine::getLastController() * STATUS_SIZE, STATUS_SIZE);
-					break;
-				case 0x01: // Get Inputs
-					OneLine::reply(inputBuffer + OneLine::getLastController() * INPUT_PACKAGE_SIZE, INPUT_PACKAGE_SIZE);
-					controllersUpdated++;
-					break;
-				case 0x02: // Read from pack
-					// Ignore the next 2 bytes.
-					OneLine::readCommand();
-					OneLine::readCommand();
-					OneLine::reply(ZERO_PACKET, 16);
-					break;
-				case 0x03: // Write to pack
-					break;
-				}
-			}
-			while (controllersUpdated < controllerCount);
-			interrupts();
 		}
+		while (controllersUpdated < controllerCount);
+		interrupts();
+
+		Serial.write(CMD_INPUT_SENT);
+	}
+
+
+
+	void handleCommands() {
+		while (true) {
+			switch (readBlocking()) {
+			case 0x00: break;
+			case 0x81: error(ERR_UNSUPPORTED_CONSOLE_CMD); break; // For use with mempacks.
+			case 0x82: error(ERR_UNSUPPORTED_CONSOLE_CMD); break; // Configure Console (2)
+			case 0x83: error(ERR_UNSUPPORTED_CONSOLE_CMD); break; // Configure Console (3)
+			case 0x84: error(ERR_UNSUPPORTED_CONSOLE_CMD); break; // Configure Console (4)
+			case 0x8A: sendPacket(); break; // Send Input Packet.
+			case 0x8C: error(ERR_UNSUPPORTED_CONSOLE_CMD); break; // Begin Recording.
+			case 0x8E: error(ERR_UNSUPPORTED_CONSOLE_CMD); break; // Reset Console.
+			case 0x8F: return; // Exit Console mode
+			default: Serial.write(CMD_UNKNOWN);
+			}
+		}
+	}
+
+	void connect() {
+		// Size byte is fixed for n64.
+		assert(readBlocking() == STATUS_SIZE * MAX_CONTROLLERS + 1, ERR_CONSOLE_CONFIG);
+
+		// First byte is input packet size.
+		packetSize = readBlocking();
+		assert(packetSize <= INPUT_PACKAGE_SIZE * MAX_CONTROLLERS, ERR_CONSOLE_CONFIG);
+
+		// 12 bytes representing controller config.
+		readBytesBlocking(statusBuffer, STATUS_SIZE * MAX_CONTROLLERS);
+
+		// Reads config buffer
+		byte controllerFlags = 0;
+		controllerCount = 0;
+
+		for (byte controller = 0; controller < MAX_CONTROLLERS; controller++) {
+			if (statusBuffer[controller] == 0x05) {
+				controllerCount++;
+				controllerFlags |= 1 << controller;
+			}
+		}
+
+		OneLine::init(controllerFlags);
+
+		enablePrecisionMode();
+		handleCommands();
+		disablePrecisionMode();
 	}
 
 	void record() {
