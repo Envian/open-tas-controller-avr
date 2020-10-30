@@ -57,10 +57,8 @@ namespace OneLine {
 
 		CTRL_DIR = 0x00; // All Pins to Input
 		CTRL_OUTPUT = 0x00; // Force all inputs low
-		pinMode(2, INPUT_PULLUP);
 	}
 
-	byte readByte() {
 /*
 Rise times take over 200ns with a 2k resistor.
 These diagrams assume a 16mhz CPU
@@ -76,6 +74,7 @@ Diagram: 0 bit
     |                                                /
     |-------------------X====X----------------------/
 */
+byte readByte() {
 #define CYCLES_AFTER_READ 6
 		byte result, mask;
 		for (byte bit = 0; bit < 8; bit++) {

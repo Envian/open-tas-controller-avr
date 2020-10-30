@@ -21,7 +21,7 @@
 
 #define serialDiscardString() while (Serial.read());
 
-const PROGMEM char STR_STARTUP[] = "OpenTAS | Type ? for help";
+const PROGMEM char STR_STARTUP[] = "OpenTAS";
 const PROGMEM char STR_HELP[] =
 	"OpenTAS https://github.com/Envian/open-tas-controller/\n"
 	"This is a list of commands available via ASCII Serial. More commands are\n"
@@ -34,7 +34,7 @@ const PROGMEM char STR_DESCRIPTION[] = "Test Description.";
 const PROGMEM char STR_VERSION[] = "Version " STR(VERSION) " API 0";
 
 
-const PROGMEM char ERR_BAD_CONSOLE[] = "ERR_BAD_C";
+const PROGMEM char ERR_BAD_CONSOLE[] = "ERR_BAD_CMD";
 const PROGMEM char ERR_NO_CONSOLE[] = "ERR_NO_C";
 const PROGMEM char ERR_CONSOLE_CONFIG[] = "ERR_C_CONFIG";
 const PROGMEM char ERR_UNSUPPORTED_CONSOLE_CMD[] = "ERR_UNSUPPORTED_C_CMD";

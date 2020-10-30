@@ -46,9 +46,10 @@ class N64Movie(Movie):
 		self.inputs = ([],) * controllers
 
 	def play(self, connection, statusFunction = None):
-		connection.write(bytearray([0x80])) # begin playback
-		connection.write(bytearray([0x40])) # Nintendo 64
+		connection.write("c".encode()) # begin playback
+		connection.write("n64".encode()) # Nintendo 64
 		#connection.write(bytearray([self.controllers]))
+		connection.write(bytearray([0x80])) # Temp - Configure Controller
 		connection.write(bytearray([0x0D])) # Temp - size of the bytes
 		connection.write(bytearray([0x04])) # Temp - One Controller Packet
 		connection.write(bytearray([0x05, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]))

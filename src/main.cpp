@@ -22,15 +22,16 @@
 
 #include "n64.h"
 
-void connectConsole(byte console) {
-	switch (console) {
+void connectConsole() {
+	char console[3];
+	readBytesBlocking(console, 3);
+
 #ifdef N64_SUPPORT
-	// byte 0: config packet size (always 13).
-	// byte 1: input packet size.
-	// bytes 2-13: controller config data.
-	case CONSOLE_N64: N64::connect(); break;
+	if ((console[0] == 'n' || console[0] == 'N') && console[1] == '6' && console[2] == '4') {
+		N64::connect();
+	} else
 #endif
-	default:
+	{
 		error(ERR_BAD_CONSOLE);
 	}
 }
@@ -42,24 +43,22 @@ void setup() {
 
 void loop() {
 	switch (readBlocking()) {
-	case 0x0: break; // Special: NOP
+	case 0x00: break; // Special: NOP
 
 // Text Commands
 	case '?': info(STR_HELP); break;
 	case 'd': info(STR_DESCRIPTION); break;
 	case 'v': info(STR_VERSION); break;
 
+// Manul Commands
+	case 'c': connectConsole(); break; // Connect to Console
+	case 'x': break; // Exit Console Mode
+	case 'r': error(ERR_NO_CONSOLE); break; // Record
+
 // Binary Commands
-	case 0x80: connectConsole(readBlocking()); break; // Connect to Console.
-	case 0x81: error(ERR_NO_CONSOLE); break; // Configure Console (1)
-	case 0x82: error(ERR_NO_CONSOLE); break; // Configure Console (2)
-	case 0x83: error(ERR_NO_CONSOLE); break; // Configure Console (3)
-	case 0x84: error(ERR_NO_CONSOLE); break; // Configure Console (4)
+	case 0x80: error(ERR_NO_CONSOLE); break; // Configure Virtual Controllers
 	case 0x8A: error(ERR_NO_CONSOLE); break; // Send Input Packet.
-	case 0x8C: error(ERR_NO_CONSOLE); break; // Begin Recording.
-	case 0x8D: error(ERR_NO_CONSOLE); break; // End Recording.
-	case 0x8E: error(ERR_NO_CONSOLE); break; // Reset Console.
-	case 0x8F: break; // Exit Console mode
+	case 0x8F: error(ERR_NO_CONSOLE); break; // Reset Console.
 
 	// Unknown commands. send ?
 	default: Serial.write(CMD_UNKNOWN);

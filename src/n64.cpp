@@ -41,61 +41,10 @@ namespace N64 {
 	byte inputBuffer[INPUT_PACKAGE_SIZE * MAX_CONTROLLERS] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 	byte statusBuffer[STATUS_SIZE * MAX_CONTROLLERS] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
-	byte controllerCount;
-	byte packetSize;
+	byte controllerCount = 0;
+	byte packetSize = 0;
 
-	void sendPacket() {
-		byte controllersUpdated = 0;
-		readBytesBlocking(inputBuffer, packetSize);
-
-		noInterrupts();
-		// Send inputs
-		do {
-			byte cmd = OneLine::readByte();
-			switch (cmd) {
-			case 0x00: // Controller Status
-			case 0xFF: // Reset Controller
-				OneLine::reply(statusBuffer + OneLine::getLastController() * STATUS_SIZE, STATUS_SIZE);
-				break;
-			case 0x01: // Get Inputs
-				OneLine::reply(inputBuffer + OneLine::getLastController() * INPUT_PACKAGE_SIZE, INPUT_PACKAGE_SIZE);
-				controllersUpdated++;
-				break;
-			// case 0x02: // Read from pack
-			// 	OneLine::readByte();
-			// 	OneLine::readByte();
-			// 	OneLine::reply(ZERO_PACKET, 16);
-			// 	break;
-			// case 0x03: // Write to pack
-			// 	break;
-			default:
-				error(ERR_UNSUPPORTED_CONSOLE_CMD, cmd);
-			}
-		}
-		while (controllersUpdated < controllerCount);
-		interrupts();
-
-		Serial.write(CMD_INPUT_SENT);
-	}
-
-	void handleCommands() {
-		while (true) {
-			switch (readBlocking()) {
-			case 0x00: break;
-			case 0x81: error(ERR_UNSUPPORTED_CONSOLE_CMD); break; // For use with mempacks.
-			case 0x82: error(ERR_UNSUPPORTED_CONSOLE_CMD); break; // Configure Console (2)
-			case 0x83: error(ERR_UNSUPPORTED_CONSOLE_CMD); break; // Configure Console (3)
-			case 0x84: error(ERR_UNSUPPORTED_CONSOLE_CMD); break; // Configure Console (4)
-			case 0x8A: sendPacket(); break; // Send Input Packet.
-			case 0x8C: error(ERR_UNSUPPORTED_CONSOLE_CMD); break; // Begin Recording.
-			case 0x8E: error(ERR_UNSUPPORTED_CONSOLE_CMD); break; // Reset Console.
-			case 0x8F: return; // Exit Console mode
-			default: Serial.write(CMD_UNKNOWN);
-			}
-		}
-	}
-
-	void connect() {
+	void configureControllers() {
 		// Size byte is fixed for n64.
 		assert(readBlocking() == STATUS_SIZE * MAX_CONTROLLERS + 1, ERR_CONSOLE_CONFIG);
 
@@ -118,44 +67,66 @@ namespace N64 {
 		}
 
 		OneLine::init(controllerFlags);
+	}
 
-		enablePrecisionMode();
-		handleCommands();
-		disablePrecisionMode();
+	void sendPacket() {
+		byte controllersUpdated = 0;
+		readBytesBlocking(inputBuffer, packetSize);
+
+		noInterrupts();
+		// Send inputs
+		while (controllersUpdated < controllerCount)
+		{
+			byte cmd = OneLine::readByte();
+			switch (cmd) {
+			case 0x00: // Controller Status
+			case 0xFF: // Reset Controller
+				OneLine::reply(statusBuffer + OneLine::getLastController() * STATUS_SIZE, STATUS_SIZE);
+				break;
+			case 0x01: // Get Inputs
+				OneLine::reply(inputBuffer + OneLine::getLastController() * INPUT_PACKAGE_SIZE, INPUT_PACKAGE_SIZE);
+				controllersUpdated++;
+				break;
+			// case 0x02: // Read from pack
+			// 	OneLine::readByte();
+			// 	OneLine::readByte();
+			// 	OneLine::reply(ZERO_PACKET, 16);
+			// 	break;
+			// case 0x03: // Write to pack
+			// 	break;
+			default:
+				error(ERR_UNSUPPORTED_CONSOLE_CMD, cmd);
+			}
+		}
+		interrupts();
+
+		Serial.write(CMD_INPUT_SENT);
 	}
 
 	void record() {
+	}
 
-	// 	const byte controllerCount = Helpers::readBlocking();
-	// 	byte currentMask = CTRLMASK_1;
-	//
-	// 	noInterrupts();
-	//
-	// 	DDRB = 0xFF;
-	//
-	// 	while (true) {
-	// 		byte mask = currentMask;
-	// 		switch (OneLine::readByte(&mask)) {
-	// 		case 0x00: // Controller Status
-	// 		case 0xFF: // Reset Controller
-	// 			// Discards 3 bytes plus the control bits
-	// 			OneLine::discardBits(26, mask);
-	// 			break;
-	// 		case 0x01: // Get Inputs
-	// 			waitForFalling(mask);
-	// 			OneLine::readBytes(buffer, 4, mask);
-	// 			waitForFalling(mask);
-	// 			Serial.write(buffer, 4);
-	// 			break;
-	// 		case 0x02: // Read from pack
-	// 			// Discards 2 additional address bytes, 33 data bytes, and 2 control bits
-	// 			OneLine::discardBits(35 * 8 + 2, mask);
-	// 			break;
-	// 		case 0x03: // Write to pack
-	// 			// Discards 32 data bytes, 1 response byte, and 2 control bits
-	// 			OneLine::discardBits(34 * 8 + 2, mask);
-	// 			break;
-	// 		}
-	// 	}
+	void handleCommands() {
+		while (true) {
+			switch (readBlocking()) {
+			case 0x00: break;
+
+			case 'c': error(ERR_BAD_CONSOLE); break; // Connect to Console
+			case 'x': return; // Exit Console Mode
+			case 'r': record(); break; // Record
+
+			case 0x80: configureControllers(); break;
+			case 0x8A: sendPacket(); break; // Send Input Packet.
+			case 0x8F: error(ERR_UNSUPPORTED_CONSOLE_CMD); break; // Reset Console.
+			default: Serial.write(CMD_UNKNOWN);
+			}
+		}
+	}
+
+	void connect() {
+		OneLine::init(0b00001111);
+		enablePrecisionMode();
+		handleCommands();
+		disablePrecisionMode();
 	}
 }

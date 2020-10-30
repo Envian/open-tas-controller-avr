@@ -21,18 +21,21 @@ byte EIMSK_OLD, PCICR_OLD, TIMSK0_OLD, TIMSK1_OLD, TIMSK2_OLD;
 bool precisionMode = false;
 
 void enablePrecisionMode() {
-	precisionMode = true;
-	EIMSK_OLD = EIMSK; EIMSK = 0; // Disables hardware pin interrupts
-	PCICR_OLD = PCICR; PCICR = 0; // Disables pin change interrupts
+	if (!precisionMode) {
+		precisionMode = true;
+		EIMSK_OLD = EIMSK; EIMSK = 0; // Disables hardware pin interrupts
+		PCICR_OLD = PCICR; PCICR = 0; // Disables pin change interrupts
 
-	// Disables timer interrupts.
-	TIMSK0_OLD = TIMSK0; TIMSK0 = 0;
-	TIMSK1_OLD = TIMSK1; TIMSK1 = 0;
-	TIMSK2_OLD = TIMSK2; TIMSK2 = 0;
+		// Disables timer interrupts.
+		TIMSK0_OLD = TIMSK0; TIMSK0 = 0;
+		TIMSK1_OLD = TIMSK1; TIMSK1 = 0;
+		TIMSK2_OLD = TIMSK2; TIMSK2 = 0;
+	}
 }
 
 void disablePrecisionMode() {
 	if (precisionMode) {
+		precisionMode = false;
 		EIMSK = EIMSK_OLD;
 		PCICR = PCICR_OLD;
 		TIMSK0 = TIMSK0_OLD;
