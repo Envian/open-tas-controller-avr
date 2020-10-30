@@ -1,0 +1,3 @@
+(fp_lib_table
+  (lib (name hybrid_layouts)(type KiCad)(uri ${KIPRJMOD}/hybrid_layouts.pretty)(options "")(descr ""))
+)
