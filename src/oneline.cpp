@@ -17,6 +17,7 @@
 #include <Arduino.h>
 #include "oneline.h"
 
+#include "commands.h"
 #include "config.h"
 #include "hardware.h"
 #include "precision.h"
@@ -31,18 +32,14 @@
 #define CTRLMASK_3 _pinToBitMask(PIN_ONELINE_CTRL_3)
 #define CTRLMASK_4 _pinToBitMask(PIN_ONELINE_CTRL_4)
 
-#if CTRL_PORT == PB
-#define PORT_NUMBER 0x05
-#elif CTRL_PORT == PC
-#define PORT_NUMBER 0x07
-#else
-#define PORT_NUMBER 0x0A
-#endif
+#define CTRL_DIR_PORT _portToModePortNumber(CTRL_PORT)
+#define CTRL_INPUT_PORT _portToInputPortNumber(CTRL_PORT)
 
 #define waitForHigh(msk) while((CTRL_INPUT & msk) != msk);
 #define waitForLow(msk) while((CTRL_INPUT & msk) == msk);
 #define waitForFalling(msk) waitForHigh(msk) waitForLow(msk)
 #define waitForRising(msk) waitForLow(msk) waitForHigh(msk)
+
 
 // This is a wrapper class for nintend's one line communication, used by
 // the N64 and Gamecube
@@ -63,8 +60,24 @@ namespace OneLine {
 		pinMode(2, INPUT_PULLUP);
 	}
 
-	byte readCommand() {
-		byte result;
+	byte readByte() {
+/*
+Rise times take over 200ns with a 2k resistor.
+These diagrams assume a 16mhz CPU
+X====X is the range where readings may take place for each signal.
+
+Diagram: 1 bit
+----|                 /-X====X--------------------------------------
+    |                /
+    |---------------/
+
+Diagram: 0 bit
+----|                                                 /-------------
+    |                                                /
+    |-------------------X====X----------------------/
+*/
+#define CYCLES_AFTER_READ 6
+		byte result, mask;
 		for (byte bit = 0; bit < 8; bit++) {
 			result <<= 1;
 
@@ -72,39 +85,36 @@ namespace OneLine {
 			waitForHigh(controllerMask);
 
 			// Waits for any to drop low, and captures that bit
-			do {lastInputMask = CTRL_INPUT | ~controllerMask; }
-			while (lastInputMask == 0xFF);
+			do {
+				mask = (CTRL_INPUT & controllerMask);
+			}
+			while (mask == controllerMask);
+			lastInputMask = mask ^ controllerMask;
 
-			// Not sure how long this delay needs to be, but it doesn't matter too much
-			waitCycles(16);
+			// 6 cycles seems to be the theoretical minimum.
+			waitCycles(CYCLES_PER_MICRO - CYCLES_AFTER_READ + RISING_EDGE_BUFFER);
 
-			result |= (CTRL_INPUT & controllerMask) ? 1 : 0;
+			result |= (CTRL_INPUT & lastInputMask) ? 1 : 0;
 		}
-		//BREAKPOINT();
 		return result;
 	}
 
 	byte getLastController() {
 		switch (lastInputMask) {
-			case (byte)~CTRLMASK_1: return 0;
-			case (byte)~CTRLMASK_2: return 1;
-			case (byte)~CTRLMASK_3: return 2;
-			case (byte)~CTRLMASK_4: return 3;
+			case (byte)CTRLMASK_1: return 0;
+			case (byte)CTRLMASK_2: return 1;
+			case (byte)CTRLMASK_3: return 2;
+			case (byte)CTRLMASK_4: return 3;
 			//default: while (true); // This should never run
 		}
 		return 0;
 	}
 
-	void reply(const byte* data, register byte count) {
-		byte replyMask = ~lastInputMask;
-		//waitForLow(replyMask);
-		waitForHigh(replyMask);
-		waitCycles(32);
+	void reply(const byte* data, byte count) {
+		// It takes _roughly_ 34 cycles to get here. Optimization may change that.
+		waitCycles(CYCLES_PER_MICRO * 4 - 32);
 
-		// Note: Takes about 30 cycles to get here from readCommand.
-		register byte __scratch1, __scratch2, __scratch3;
-
-#pragma GCC diagnostic ignored "-Wuninitialized"
+		byte __scratch1, __scratch2, __scratch3;
 		asm volatile (
 			"rjmp writeloop%= \n" \
 
@@ -193,51 +203,18 @@ namespace OneLine {
 
 			"out %[portNumber], %[zero] \n"
 			// outputs (None are real)
-			: [counter] "+r" (count), [bitmask] "+r" (__scratch1), [currentByte] "+r" (__scratch2),
-			[pointer] "+x" (data), [scratch] "+r" (__scratch3)
+			: [counter] "+&r" (count), [bitmask] "=&r" (__scratch1), [currentByte] "=&r" (__scratch2),
+			[pointer] "+&x" (data), [scratch] "=&r" (__scratch3)
 			// inputs
 			: "[counter]" (count), "[pointer]" (data), [zero] "r" (0),
-			[lowMask] "r" (replyMask), [portNumber] "i" (PORT_NUMBER)
+			[lowMask] "r" (lastInputMask), [portNumber] "i" (CTRL_DIR_PORT)
 
 			// Clobbers
 			: "cc"
 		);
-#pragma GCC diagnostic pop
-	}
-
-	int getReadWriteAddress() {
-		// TODO: Not Implemented
-		return 0;
 	}
 
 	void readBytes(const byte* buffer, byte max) {
 		// TODO: Not Implemented
 	}
-/*
-	static inline byte _readByte(const byte mask) {
-		byte result;
-		for (byte x = 0; x < 8; x++) {
-			result <<= 1;
-
-			waitForFalling(mask);
-			waitCycles(16);
-			result |= (CTRL_INPUT & mask) ? 1 : 0;
-		}
-
-		return result;
-	}
-
-	void readBytes(byte* dest, const byte count, const byte mask) {
-		for (byte n = 0; n < count; n++) {
-			*dest = _readByte(mask);
-			dest++;
-		}
-	}
-
-	void discardBits(const int bits, const byte mask) {
-		for (int x = 0; x < bits; x++) {
-			waitForFalling(mask);
-		}
-	}
-	*/
 }

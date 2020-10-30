@@ -24,27 +24,31 @@ void printString(const char* string) {
 	char letter;
 
 	Serial.write('\n');
-	do {
+	while (true) {
 		letter = pgm_read_byte_near(string);
+		if (!letter) {
+			return;
+		}
 		Serial.write(letter);
 		string++;
-	} while (letter);
+	}
 }
 
 void info(const char* msg) {
-	// printString() will prefix the string with a newline.
 	if (CMD_INFO != '\n') {
 		Serial.write(CMD_INFO);
 	}
 	printString(msg);
+	Serial.write(0);
 }
 
 void warning(const char* msg) {
 	Serial.write(CMD_WARN);
 	printString(msg);
+	Serial.write(0);
 }
 
-void error(const char* msg) {
+void error_init() {
 	interrupts();
 	disablePrecisionMode();
 
@@ -54,14 +58,51 @@ void error(const char* msg) {
 		waitCycles(512);
 	}
 	delay(100);
-	Serial.write(CMD_ERROR);
-	printString(msg);
+}
 
+void error_loop() {
 	DDRB = 0b00100000;
 	while (true) {
 		PORTB = 0b00100000;
 		delay(500);
 		PORTB = 0;
 		delay(500);
+	}
+}
+
+void error(const char* msg) {
+	error_init();
+	Serial.write(CMD_ERROR);
+	printString(msg);
+	Serial.write(0);
+	error_loop();
+}
+
+void error(const char* msg, byte data) {
+	error_init();
+	Serial.write(CMD_ERROR);
+	printString(msg);
+	Serial.write(": 0x");
+	Serial.print(data, HEX);
+	Serial.write(0);
+	error_loop();
+}
+
+void BREAKPOINT(const char* msg) {
+	error_init();
+	Serial.write(CMD_ERROR);
+	Serial.write(msg);
+	Serial.write(0);
+
+	DDRB = 0b00100000;
+	while (true) {
+		PORTB = 0b00100000;
+		delay(200);
+		PORTB = 0;
+		delay(200);
+		PORTB = 0b00100000;
+		delay(200);
+		PORTB = 0;
+		delay(400);
 	}
 }

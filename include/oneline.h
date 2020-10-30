@@ -22,8 +22,7 @@
 
 namespace OneLine {
 	void init(const byte mask);
-	byte readCommand();
-	int getReadWriteAddress();
+	byte readByte();
 	byte getLastController();
 	void reply(const byte* data, register byte count);
 	void readBytes(const byte* buffer, byte max);

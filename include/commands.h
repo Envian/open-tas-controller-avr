@@ -16,8 +16,13 @@
 
 #pragma once
 #include <Arduino.h>
+#include "config.h"
 
-#define assert(val, msg) if (!(val)) error(msg);
+#define _ASSERT1(val) if (!(val)) { BREAKPOINT("ASSERT FAILED " STR(__FILE__) " " STR(__LINE__)); }
+#define _ASSERT2(val, msg) if (!(val)) { error(msg); }
+
+#define _ASSERT(_1, _2, NAME, ...) NAME
+#define assert(...) _ASSERT(__VA_ARGS__, _ASSERT2, _ASSERT1)(__VA_ARGS__)
 
 enum Responses : byte {
 	// Ignored by the host.
@@ -45,3 +50,5 @@ enum Responses : byte {
 void info(const char* msg);
 void warn(const char* msg);
 void error(const char* msg);
+void error(const char* msg, byte data);
+void BREAKPOINT(const char* msg); // Same as error, except for memory based strings. Intended for debugging.

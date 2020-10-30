@@ -20,8 +20,6 @@
 #include "config.h"
 
 #define serialDiscardString() while (Serial.read());
-#define BREAKPOINT() error(BREAKPOINT);
-
 
 const PROGMEM char STR_STARTUP[] = "OpenTAS | Type ? for help";
 const PROGMEM char STR_HELP[] =
@@ -40,5 +38,3 @@ const PROGMEM char ERR_BAD_CONSOLE[] = "ERR_BAD_C";
 const PROGMEM char ERR_NO_CONSOLE[] = "ERR_NO_C";
 const PROGMEM char ERR_CONSOLE_CONFIG[] = "ERR_C_CONFIG";
 const PROGMEM char ERR_UNSUPPORTED_CONSOLE_CMD[] = "ERR_UNSUPPORTED_C_CMD";
-
-const PROGMEM char BREAKPOINT[] = "BREAKPOINT";

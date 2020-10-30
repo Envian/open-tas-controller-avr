@@ -60,7 +60,12 @@ class N64Movie(Movie):
 			inputs = [input[frame] for input in self.inputs]
 			connection.write(bytearray([0x8A]) + b"".join(inputs))
 			statusFunction(self, frame, inputs) if statusFunction else None
-			connection.read(1)
+			response = connection.read(1)[0]
+			if response == 0xFF:
+				response = connection.read_until(bytes([0])).decode("ASCII");
+				print(response);
+				while True:
+					pass
 
 	def record(self, connection, statusFunction = None):
 		connection.write(bytearray([0x0B])) # begin Recording

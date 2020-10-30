@@ -37,9 +37,10 @@
 #define STATUS_SIZE 3
 
 namespace N64 {
-	byte ZERO_PACKET[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	const byte ZERO_PACKET[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 	byte inputBuffer[INPUT_PACKAGE_SIZE * MAX_CONTROLLERS] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-	byte statusBuffer[STATUS_SIZE * MAX_CONTROLLERS] = { 0x05, 0x00, 0x00, 0x05, 0x00, 0x00, 0x05, 0x00, 0x00, 0x05, 0x00, 0x00 };
+	byte statusBuffer[STATUS_SIZE * MAX_CONTROLLERS] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+
 	byte controllerCount;
 	byte packetSize;
 
@@ -50,7 +51,8 @@ namespace N64 {
 		noInterrupts();
 		// Send inputs
 		do {
-			switch (OneLine::readCommand()) {
+			byte cmd = OneLine::readByte();
+			switch (cmd) {
 			case 0x00: // Controller Status
 			case 0xFF: // Reset Controller
 				OneLine::reply(statusBuffer + OneLine::getLastController() * STATUS_SIZE, STATUS_SIZE);
@@ -59,14 +61,15 @@ namespace N64 {
 				OneLine::reply(inputBuffer + OneLine::getLastController() * INPUT_PACKAGE_SIZE, INPUT_PACKAGE_SIZE);
 				controllersUpdated++;
 				break;
-			case 0x02: // Read from pack
-				// Ignore the next 2 bytes.
-				OneLine::readCommand();
-				OneLine::readCommand();
-				OneLine::reply(ZERO_PACKET, 16);
-				break;
-			case 0x03: // Write to pack
-				break;
+			// case 0x02: // Read from pack
+			// 	OneLine::readByte();
+			// 	OneLine::readByte();
+			// 	OneLine::reply(ZERO_PACKET, 16);
+			// 	break;
+			// case 0x03: // Write to pack
+			// 	break;
+			default:
+				error(ERR_UNSUPPORTED_CONSOLE_CMD, cmd);
 			}
 		}
 		while (controllersUpdated < controllerCount);
@@ -74,8 +77,6 @@ namespace N64 {
 
 		Serial.write(CMD_INPUT_SENT);
 	}
-
-
 
 	void handleCommands() {
 		while (true) {
