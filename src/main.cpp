@@ -43,12 +43,19 @@ void setup() {
 
 void loop() {
 	switch (readBlocking()) {
-	case 0x00: break; // Special: NOP
+	// Special, ignored, discarded commands.
+	case 0x00: break;
+	case '\n': break;
+	case 'A' ... 'Z':
+	case '\t':
+	case ' ':
+		while (readBlocking() != '\n'); break;
 
 // Text Commands
 	case '?': info(STR_HELP); break;
 	case 'd': info(STR_DESCRIPTION); break;
 	case 'v': info(STR_VERSION); break;
+
 
 // Manul Commands
 	case 'c': connectConsole(); break; // Connect to Console
@@ -56,22 +63,7 @@ void loop() {
 	case 'r': error(ERR_NO_CONSOLE); break; // Record
 
 // Binary Commands
-	case 0x80: // Send Input Packet.
-	case 0x81: // Generic Console Command (Binary)
-	case 0x82: // Generic Console Command (Binary)
-	case 0x83: // Generic Console Command (Binary)
-	case 0x84: // Generic Console Command (Binary)
-	case 0x85: // Generic Console Command (Binary)
-	case 0x86: // Generic Console Command (Binary)
-	case 0x87: // Generic Console Command (Binary)
-	case 0x88: // Generic Console Command (Binary)
-	case 0x89: // Generic Console Command (Binary)
-	case 0x8A: // Generic Console Command (Binary)
-	case 0x8B: // Generic Console Command (Binary)
-	case 0x8C: // Generic Console Command (Binary)
-	case 0x8D: // Generic Console Command (Binary)
-	case 0x8E: // Generic Console Command (Binary)
-	case 0x8F: // Generic Console Command (Binary)
+	case 0x80 ... 0x8F: // Console specific binary commands.
 		error(ERR_NO_CONSOLE); break;
 
 	// Unknown commands. send ?

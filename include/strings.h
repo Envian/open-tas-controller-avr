@@ -24,9 +24,9 @@
 const PROGMEM char STR_STARTUP[] = "OpenTAS";
 const PROGMEM char STR_HELP[] =
 	"OpenTAS https://github.com/Envian/open-tas-controller/\n"
-	"This is a list of commands available via ASCII Serial. More commands are\n"
+	"This is a list of commands available via ASCII Serial. More commands are"
 	"available to dedicated, binary clients. More details can be found on Github.\n"
-	"\n"
+	" \n"
 	"    v - Version Info\n"
 	"    d - Describe\n"
 	"    ? - Help";

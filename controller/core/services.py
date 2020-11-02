@@ -25,8 +25,8 @@ from serial import Serial
 
 def connectToController(port, rate):
 	controller = Serial(port, rate, timeout=10)
-	preamble = controller.read_until(bytes([0]))
-	isOpenTAS = preamble.startswith(b"\nOpenTAS")
+	preamble = controller.read_until(b"\n")
+	isOpenTAS = preamble.startswith(b"OpenTAS")
 	controller.timeout = None
 
 	return (controller, isOpenTAS)

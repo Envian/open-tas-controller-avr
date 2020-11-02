@@ -23,7 +23,6 @@
 void printString(const char* string) {
 	char letter;
 
-	Serial.write('\n');
 	while (true) {
 		letter = pgm_read_byte_near(string);
 		if (!letter) {
@@ -35,17 +34,14 @@ void printString(const char* string) {
 }
 
 void info(const char* msg) {
-	if (CMD_INFO != '\n') {
-		Serial.write(CMD_INFO);
-	}
 	printString(msg);
-	Serial.write(0);
+	Serial.write('\n');
 }
 
 void warning(const char* msg) {
 	Serial.write(CMD_WARN);
 	printString(msg);
-	Serial.write(0);
+	Serial.write('\n');
 }
 
 void error_init() {
@@ -64,9 +60,9 @@ void error_loop() {
 	DDRB = 0b00100000;
 	while (true) {
 		PORTB = 0b00100000;
-		delay(500);
+		delay(100);
 		PORTB = 0;
-		delay(500);
+		delay(100);
 	}
 }
 
@@ -74,7 +70,7 @@ void error(const char* msg) {
 	error_init();
 	Serial.write(CMD_ERROR);
 	printString(msg);
-	Serial.write(0);
+	Serial.write('\n');
 	error_loop();
 }
 
@@ -84,7 +80,7 @@ void error(const char* msg, byte data) {
 	printString(msg);
 	Serial.write(": 0x");
 	Serial.print(data, HEX);
-	Serial.write(0);
+	Serial.write('\n');
 	error_loop();
 }
 
@@ -92,17 +88,13 @@ void BREAKPOINT(const char* msg) {
 	error_init();
 	Serial.write(CMD_ERROR);
 	Serial.write(msg);
-	Serial.write(0);
+	Serial.write('\n');
 
 	DDRB = 0b00100000;
 	while (true) {
-		PORTB = 0b00100000;
-		delay(200);
-		PORTB = 0;
-		delay(200);
-		PORTB = 0b00100000;
-		delay(200);
 		PORTB = 0;
 		delay(400);
+		PORTB = 0b00100000;
+		delay(100);
 	}
 }

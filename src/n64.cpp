@@ -104,7 +104,13 @@ namespace N64 {
 	void handleCommands() {
 		while (true) {
 			switch (readBlocking()) {
+			// Special, ignored, discarded commands.
 			case 0x00: break;
+			case '\n': break;
+			case 'A' ... 'Z':
+			case '\t':
+			case ' ':
+				while (readBlocking() != '\n'); break;
 
 			case 'c': error(ERR_BAD_CONSOLE); break; // Connect to Console
 			case 'x': return; // Exit Console Mode
