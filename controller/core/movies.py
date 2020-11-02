@@ -49,17 +49,15 @@ class N64Movie(Movie):
 		connection.write("c".encode()) # begin playback
 		connection.write("n64".encode()) # Nintendo 64
 		#connection.write(bytearray([self.controllers]))
-		connection.write(bytearray([0x80])) # Temp - Configure Controller
-		connection.write(bytearray([0x0D])) # Temp - size of the bytes
-		connection.write(bytearray([0x04])) # Temp - One Controller Packet
-		connection.write(bytearray([0x05, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]))
+		connection.write(bytearray([0x81, 0x04])) # Temp - Set Controller packet size.
+		connection.write(bytearray([0x82, 0x00, 0x05, 0x00, 0x02])) # Temp - Configure controller 1
 
 		for frame in range(self.frames):
 
 			#Size is equal to the number of bytes the chip is expecting back.
 			#currently not considered.
 			inputs = [input[frame] for input in self.inputs]
-			connection.write(bytearray([0x8A]) + b"".join(inputs))
+			connection.write(bytearray([0x80]) + b"".join(inputs))
 			statusFunction(self, frame, inputs) if statusFunction else None
 			response = connection.read(1)[0]
 			if response == 0xFF:

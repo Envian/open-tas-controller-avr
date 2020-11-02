@@ -47,16 +47,20 @@ namespace OneLine {
 	byte controllerMask;
 	byte lastInputMask;
 
-	void init(const byte mask) {
-		//Interrupts::disableRegisters();
+	void init() {
 		controllerMask = 0;
-		controllerMask |= (mask & 0x08) ? CTRLMASK_4 : 0;
-		controllerMask |= (mask & 0x04) ? CTRLMASK_3 : 0;
-		controllerMask |= (mask & 0x02) ? CTRLMASK_2 : 0;
-		controllerMask |= (mask & 0x01) ? CTRLMASK_1 : 0;
 
 		CTRL_DIR = 0x00; // All Pins to Input
 		CTRL_OUTPUT = 0x00; // Force all inputs low
+	}
+
+	void enableController(byte controller) {
+		switch (controller) {
+			case 0: controllerMask |= CTRLMASK_1; break;
+			case 1: controllerMask |= CTRLMASK_2; break;
+			case 2: controllerMask |= CTRLMASK_3; break;
+			case 3: controllerMask |= CTRLMASK_4; break;
+		}
 	}
 
 /*

@@ -56,9 +56,23 @@ void loop() {
 	case 'r': error(ERR_NO_CONSOLE); break; // Record
 
 // Binary Commands
-	case 0x80: error(ERR_NO_CONSOLE); break; // Configure Virtual Controllers
-	case 0x8A: error(ERR_NO_CONSOLE); break; // Send Input Packet.
-	case 0x8F: error(ERR_NO_CONSOLE); break; // Reset Console.
+	case 0x80: // Send Input Packet.
+	case 0x81: // Generic Console Command (Binary)
+	case 0x82: // Generic Console Command (Binary)
+	case 0x83: // Generic Console Command (Binary)
+	case 0x84: // Generic Console Command (Binary)
+	case 0x85: // Generic Console Command (Binary)
+	case 0x86: // Generic Console Command (Binary)
+	case 0x87: // Generic Console Command (Binary)
+	case 0x88: // Generic Console Command (Binary)
+	case 0x89: // Generic Console Command (Binary)
+	case 0x8A: // Generic Console Command (Binary)
+	case 0x8B: // Generic Console Command (Binary)
+	case 0x8C: // Generic Console Command (Binary)
+	case 0x8D: // Generic Console Command (Binary)
+	case 0x8E: // Generic Console Command (Binary)
+	case 0x8F: // Generic Console Command (Binary)
+		error(ERR_NO_CONSOLE); break;
 
 	// Unknown commands. send ?
 	default: Serial.write(CMD_UNKNOWN);

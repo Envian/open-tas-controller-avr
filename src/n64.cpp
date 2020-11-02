@@ -43,30 +43,25 @@ namespace N64 {
 
 	byte controllerCount = 0;
 	byte packetSize = 0;
+	byte controllerFlags = 0;
 
-	void configureControllers() {
-		// Size byte is fixed for n64.
-		assert(readBlocking() == STATUS_SIZE * MAX_CONTROLLERS + 1, ERR_CONSOLE_CONFIG);
-
-		// First byte is input packet size.
+	void setPacketSize() {
 		packetSize = readBlocking();
 		assert(packetSize <= INPUT_PACKAGE_SIZE * MAX_CONTROLLERS, ERR_CONSOLE_CONFIG);
+	}
 
-		// 12 bytes representing controller config.
-		readBytesBlocking(statusBuffer, STATUS_SIZE * MAX_CONTROLLERS);
+	void setControllerMode() {
+		byte controller = readBlocking();
+		assert(controller <= MAX_CONTROLLERS, ERR_CONSOLE_CONFIG);
 
-		// Reads config buffer
-		byte controllerFlags = 0;
+		readBytesBlocking(statusBuffer + controller * STATUS_SIZE, STATUS_SIZE);
+		OneLine::enableController(controller);
+		controllerFlags |= 1 << controller;
+
 		controllerCount = 0;
-
-		for (byte controller = 0; controller < MAX_CONTROLLERS; controller++) {
-			if (statusBuffer[controller] == 0x05) {
-				controllerCount++;
-				controllerFlags |= 1 << controller;
-			}
+		for (byte bit = 0; bit < MAX_CONTROLLERS; bit++) {
+			controllerCount += (controllerFlags & 1 << bit) ? 1 : 0;
 		}
-
-		OneLine::init(controllerFlags);
 	}
 
 	void sendPacket() {
@@ -115,16 +110,20 @@ namespace N64 {
 			case 'x': return; // Exit Console Mode
 			case 'r': record(); break; // Record
 
-			case 0x80: configureControllers(); break;
-			case 0x8A: sendPacket(); break; // Send Input Packet.
-			case 0x8F: error(ERR_UNSUPPORTED_CONSOLE_CMD); break; // Reset Console.
+			case 0x80: sendPacket(); break;
+			case 0x81: setPacketSize(); break;
+			case 0x82: setControllerMode(); break;
 			default: Serial.write(CMD_UNKNOWN);
 			}
 		}
 	}
 
 	void connect() {
-		OneLine::init(0b00001111);
+		OneLine::init();
+		controllerCount = 0;
+		packetSize = 0;
+		controllerFlags = 0;
+
 		enablePrecisionMode();
 		handleCommands();
 		disablePrecisionMode();
