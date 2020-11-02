@@ -20,3 +20,6 @@
 byte readBlocking();
 void readBytesBlocking(char* buffer, size_t length);
 void readBytesBlocking(uint8_t* buffer, size_t length);
+void zero(void* buffer, size_t length);
+
+#define zero(buffer, len) for (byte n=0; n<len;n++) { *(buffer+n) = 0; }

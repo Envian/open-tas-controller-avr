@@ -26,5 +26,5 @@ namespace OneLine {
 	byte readByte();
 	byte getLastController();
 	void reply(const byte* data, register byte count);
-	void readBytes(const byte* buffer, byte max);
+	byte readResponse(byte* buffer, byte max);
 }
