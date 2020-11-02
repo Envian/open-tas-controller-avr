@@ -39,6 +39,7 @@ void connectConsole() {
 void setup() {
 	Serial.begin(SERIAL_BAUD);
 	info(STR_STARTUP);
+	SETUP_OUTPUT_PINS();
 }
 
 void loop() {

@@ -28,15 +28,12 @@ enum Responses : byte {
 	// Ignored by the host.
 	CMD_NOOP = 0, // Simply ignored by the host.
 
+	// Sent when the console is ready for a new command.
+	CMD_INPUT_SENT = 0x8B,
+
 	// Sent when an unknown command is received.
 	CMD_UNKNOWN = '?',
 
-	// Sent when the last received packet (0x8A) has been sent to the console.
-	CMD_INPUT_SENT = 0x8B,
-
-	// Sent whenever a console/controller command are read (for recording)
-	CMD_CON_CMD = 0x8B,
-	CMD_CONTROL_CMD = 0x8C,
 
 	// Sends an info message to the user on the host. No response expected.
 	CMD_INFO = '\n',

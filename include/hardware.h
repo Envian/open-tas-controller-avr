@@ -39,3 +39,11 @@
 
 #define CYCLES_PER_MICRO (F_CPU / 1000000)
 #define RISING_EDGE_BUFFER (CYCLES_PER_MICRO/8+1)
+
+
+// For LED control and timing pins.
+#define SETUP_OUTPUT_PINS() DDRB |= 0b00100001; PORTB &= 0b11011110;
+#define LED_ON() PORTB |= 0b00100000
+#define LED_OFF() PORTB &= 0b11011111
+#define TIMER_ON() PORTB |= 0b00000001
+#define TIMER_OFF() PORTB &= 0b11111110

@@ -57,11 +57,11 @@ void error_init() {
 }
 
 void error_loop() {
-	DDRB = 0b00100000;
+	SETUP_OUTPUT_PINS();
 	while (true) {
-		PORTB = 0b00100000;
+		LED_ON();
 		delay(100);
-		PORTB = 0;
+		LED_OFF();
 		delay(100);
 	}
 }
@@ -90,11 +90,11 @@ void BREAKPOINT(const char* msg) {
 	Serial.write(msg);
 	Serial.write('\n');
 
-	DDRB = 0b00100000;
+	SETUP_OUTPUT_PINS();
 	while (true) {
-		PORTB = 0;
+		LED_OFF();
 		delay(400);
-		PORTB = 0b00100000;
+		LED_ON();
 		delay(100);
 	}
 }

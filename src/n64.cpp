@@ -76,37 +76,6 @@ namespace N64 {
 		}
 	}
 
-	void recordControllerMode(byte controller, byte* data) {
-		byte newFlags = controllerFlags | (1 << controller);
-		if (newFlags != controllerFlags) {
-			controllerFlags = newFlags;
-
-			// Recount Controllers
-			controllerCount = 0;
-			for (byte bit = 0; bit < MAX_CONTROLLERS; bit++) {
-				controllerCount += (newFlags & 1);
-				newFlags >>= 1;
-			}
-
-			// Send the packet size command
-			Serial.write(0x81);
-			Serial.write(controllerCount * INPUT_PACKAGE_SIZE);
-		}
-
-		// Check if the status buffer has changed.
-		byte* statusBufferPtr = statusBuffer + controller * STATUS_SIZE;
-		for (byte n = 0; n < 3; n++) {
-			if (*(statusBufferPtr + n) != *(data + n)) {
-				for (; n<3 ; n++) {
-					*(statusBufferPtr + n) = *(data + n);
-				}
-				Serial.write(0x82);
-				Serial.write(data, 3);
-				return;
-			}
-		}
-	}
-
 	void sendPacket() {
 		byte controllersUpdated = 0;
 		readBytesBlocking(inputBuffer, packetSize);
@@ -141,25 +110,64 @@ namespace N64 {
 		Serial.write(CMD_INPUT_SENT);
 	}
 
+	void recordControllerMode(byte controller, byte* data) {
+		byte newFlags = controllerFlags | (1 << controller);
+		if (newFlags != controllerFlags) {
+			controllerFlags = newFlags;
+
+			// Recount Controllers
+			controllerCount = 0;
+			for (byte bit = 0; bit < MAX_CONTROLLERS; bit++) {
+				controllerCount += (newFlags & 1);
+				newFlags >>= 1;
+			}
+
+			// Send the packet size command
+			Serial.write(0x81);
+			switch (controllerFlags) {
+				case 0b00001000 ... 0b00001111: Serial.write(4 * INPUT_PACKAGE_SIZE); break;
+				case 0b00000100 ... 0b00000111: Serial.write(3 * INPUT_PACKAGE_SIZE); break;
+				case 0b00000010 ... 0b00000011: Serial.write(2 * INPUT_PACKAGE_SIZE); break;
+				case 0b00000001: Serial.write(INPUT_PACKAGE_SIZE); break;
+				default: Serial.write(0); break;
+			}
+		}
+
+		// Upload new buffer size.
+		Serial.write(0x82);
+		Serial.write(controller);
+		Serial.write(data, STATUS_SIZE);
+	}
+
 	void record() {
 		OneLine::enableController(0);
-		OneLine::enableController(1);
-		OneLine::enableController(2);
-		OneLine::enableController(3);
+		// Reading is bugged if all controller masks are enabled.
+		// OneLine::enableController(1);
+		// OneLine::enableController(2);
+		// OneLine::enableController(3);
 
-		Serial.write("cn64\n");
-		while (!Serial.available()) {
+		Serial.write("cn64\n"); // This commands the replay to start.
+		noInterrupts();
+		while (1) {
 			byte cmd = OneLine::readByte();
 			byte read;
 			switch (cmd) {
 			case 0x00: // Controller Status
 			case 0xFF: // Reset Controller
-				read = OneLine::readResponse(commandBuffer, 3);
-				if (read == 3) {
+				read = OneLine::readResponse(commandBuffer, STATUS_SIZE);
+				if (read == STATUS_SIZE) {
 					recordControllerMode(OneLine::getLastController(), commandBuffer);
 				}
 				break;
 			case 0x01: // Get Inputs
+				read = OneLine::readResponse(commandBuffer, INPUT_PACKAGE_SIZE);
+				if (read == INPUT_PACKAGE_SIZE) {
+					byte controller = OneLine::getLastController();
+					byte* dataptr = inputBuffer + controller * INPUT_PACKAGE_SIZE;
+					memcpy(dataptr, commandBuffer, INPUT_PACKAGE_SIZE);
+					Serial.write(0x80);
+					Serial.write(dataptr, INPUT_PACKAGE_SIZE);
+				}
 				break;
 			// case 0x02: // Read from pack
 			// 	OneLine::readByte();
@@ -172,7 +180,6 @@ namespace N64 {
 				error(ERR_UNSUPPORTED_CONSOLE_CMD, cmd);
 			}
 		}
-		Serial.write("x");
 	}
 
 	void handleCommands() {

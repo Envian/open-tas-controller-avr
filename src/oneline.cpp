@@ -114,9 +114,7 @@ byte readByte() {
 	}
 
 	void reply(const byte* data, byte count) {
-		// It takes _roughly_ 34 cycles to get here. Optimization may change that.
-		waitCycles(CYCLES_PER_MICRO * 3 - 32);
-		waitForHigh(lastInputMask);
+		waitForRising(lastInputMask);
 		waitCycles(CYCLES_PER_MICRO);
 
 		byte __scratch1, __scratch2, __scratch3;
@@ -220,20 +218,22 @@ byte readByte() {
 	}
 
 	byte readResponse(byte* buffer, byte max) {
+		waitForRising(lastInputMask);
+
 		byte count;
 		for (count = 0; count < max; count++) {
 			byte result = 0;
 			for (byte n = 0; n < 8; n++) {
 				result <<= 1;
 
-				byte timeout = 20;
+				register byte timeout = 20;
 				while(!(CTRL_INPUT & lastInputMask)); // Waits for high (optimized)
 				while(CTRL_INPUT & lastInputMask) { // Waits for falling with timeout.
 					timeout--;
 					if (!timeout) { return count; }
 				}
 
-				waitCycles(13);
+				waitCycles(CYCLES_PER_MICRO - CYCLES_AFTER_READ + RISING_EDGE_BUFFER + 1);
 				result |= (CTRL_INPUT & lastInputMask) ? 1 : 0;
 			}
 			*buffer = result;
